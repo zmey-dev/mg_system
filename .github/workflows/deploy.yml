@@ -1,0 +1,119 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pgsql, mbstring, xml, ctype, json, bcmath, fileinfo
+          coverage: none
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Build Frontend Assets
+        run: npm run build
+
+      - name: Install Composer Dependencies
+        run: composer install --optimize-autoloader --no-dev --prefer-dist
+
+      - name: Prepare Deployment Package
+        run: |
+          mkdir -p deployment
+          rsync -av --exclude='node_modules' \
+                    --exclude='.git' \
+                    --exclude='.github' \
+                    --exclude='tests' \
+                    --exclude='.env' \
+                    --exclude='storage/logs/*' \
+                    --exclude='storage/framework/sessions/*' \
+                    --exclude='storage/framework/cache/*' \
+                    --exclude='deployment' \
+                    . deployment/
+
+      - name: Deploy to cPanel via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          port: ${{ secrets.CPANEL_PORT }}
+          script_transfer: true
+          script: |
+            cd ${{ secrets.CPANEL_DEPLOY_PATH }}
+
+            # Create backup
+            timestamp=$(date +%Y%m%d_%H%M%S)
+            tar -czf ../backups/backup_$timestamp.tar.gz . --exclude='storage/logs/*' --exclude='node_modules' --exclude='vendor' || true
+
+            # Pull latest changes
+            git pull origin master
+
+            # Update Composer dependencies
+            composer install --optimize-autoloader --no-dev
+
+            # Clear caches
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan view:clear
+            php artisan route:clear
+
+            # Run migrations
+            php artisan migrate --force
+
+            # Optimize for production
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Set permissions
+            chmod -R 775 storage bootstrap/cache
+
+            echo "Deployment completed successfully at $(date)"
+
+      - name: Verify Deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          port: ${{ secrets.CPANEL_PORT }}
+          script: |
+            cd ${{ secrets.CPANEL_DEPLOY_PATH }}
+
+            # Check if application is responding
+            php artisan --version
+
+            # Verify build assets exist
+            ls -la public/build/manifest.json
+
+            echo "Verification completed"
+
+      - name: Notify Deployment Status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed!"
+          fi
