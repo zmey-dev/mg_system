@@ -353,16 +353,16 @@ export default function Catalog({ auth, torres, grupos }) {
                                     <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Estatísticas Rápidas</h4>
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">Ativos Ativos</span>
-                                            <span className="font-semibold text-emerald-500">1,678</span>
+                                            <span className="text-gray-600 dark:text-gray-400">Total de Ativos</span>
+                                            <span className="font-semibold text-emerald-500">{totalItems.toLocaleString()}</span>
                                         </div>
                                         <div className="flex items-center justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">Em Manutenção</span>
-                                            <span className="font-semibold text-amber-500">24</span>
+                                            <span className="text-gray-600 dark:text-gray-400">Torres</span>
+                                            <span className="font-semibold text-blue-500">{totalTowers.toLocaleString()}</span>
                                         </div>
                                         <div className="flex items-center justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">Problemas Críticos</span>
-                                            <span className="font-semibold text-rose-500">3</span>
+                                            <span className="text-gray-600 dark:text-gray-400">Ambientes</span>
+                                            <span className="font-semibold text-amber-500">{totalEnvironments.toLocaleString()}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -436,7 +436,7 @@ export default function Catalog({ auth, torres, grupos }) {
                                 <div className={`p-6 border-t ${colors.border} ${colors.surface}`}>
                                     <div className="flex items-center justify-between">
                                         <div className={`flex items-center space-x-4 text-sm ${colors.text.secondary}`}>
-                                            <span>Showing 1,672 assets across 2 towers</span>
+                                            <span>Showing {totalItems.toLocaleString()} assets across {totalTowers} tower{totalTowers !== 1 ? 's' : ''}</span>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <button

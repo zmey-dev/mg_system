@@ -51,7 +51,8 @@ class DashboardController extends Controller
 
         $semana = (clone $query)
             ->where('atividade_status', 'ativa')
-            ->whereBetween('atividade_dtestimada', [$today, $weekEnd])
+            ->where('atividade_dtestimada', '>', $today)
+            ->where('atividade_dtestimada', '<=', $weekEnd)
             ->count();
 
         $proximas = (clone $query)
