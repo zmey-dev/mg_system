@@ -70,9 +70,6 @@ const Activities = ({ auth, atividades, filters }) => {
             atividaderegistro_observacoes: '',
         }, {
             preserveScroll: true,
-            onSuccess: () => {
-                console.log('Activity started successfully');
-            }
         });
     };
 

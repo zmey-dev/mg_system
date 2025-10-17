@@ -42,7 +42,6 @@ export const ATIVIDADE_STATUS = {
 
 // AtividadeRegistro Status Constants
 export const REGISTRO_STATUS = {
-  PENDENTE: 'pendente',
   EM_ANDAMENTO: 'em_andamento',
   CONCLUIDA: 'concluida',
 } as const;

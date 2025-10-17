@@ -13,8 +13,7 @@ export default function Login({ status, canResetPassword }) {
 
     const submit = (e) => {
         e.preventDefault();
-        console.log('++++++++++++++++++++');
-        
+
         post(route('login'), {
             onFinish: () => reset('password'),
         });
@@ -145,7 +144,6 @@ export default function Login({ status, canResetPassword }) {
                                 className="w-full flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors group"
                                 onClick={() => {
                                     // PWA install logic will be added here
-                                    console.log('PWA install prompted');
                                 }}
                             >
                                 <Smartphone className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />

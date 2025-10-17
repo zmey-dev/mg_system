@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('atividaderegistro_dtproxima')->nullable();
             $table->json('costs_json')->nullable();
             $table->foreignId('performed_by')->nullable()->constrained('users', 'id');
-            $table->string('status', 20)->default('pendente');
+            $table->string('status', 20)->default('em_andamento');
             $table->timestamps();
 
             $table->index('atividade_id');
@@ -33,7 +33,7 @@ return new class extends Migration
 
         // Add CHECK constraint for PostgreSQL enum-like behavior
         if (config('database.default') === 'pgsql') {
-            DB::statement("ALTER TABLE atividaderegistro ADD CONSTRAINT atividaderegistro_status_check CHECK (status IN ('pendente', 'em_andamento', 'concluida'))");
+            DB::statement("ALTER TABLE atividaderegistro ADD CONSTRAINT atividaderegistro_status_check CHECK (status IN ('em_andamento', 'concluida'))");
         }
     }
 

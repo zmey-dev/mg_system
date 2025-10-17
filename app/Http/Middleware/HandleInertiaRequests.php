@@ -32,17 +32,16 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                // Temporarily disabled middleware - will be enabled after backend implementation
-                // 'user' => $request->user(),
-                'user' => [
-                    'id' => 1,
-                    'name' => 'Demo User',
-                    'email' => 'admin@buildmg.com',
-                    'role' => 'admin',
-                    'email_verified_at' => now(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'role' => $request->user()->role,
+                    'empreendimento_id' => $request->user()->empreendimento_id,
+                    'email_verified_at' => $request->user()->email_verified_at,
+                    'created_at' => $request->user()->created_at,
+                    'updated_at' => $request->user()->updated_at,
+                ] : null,
             ],
         ];
     }

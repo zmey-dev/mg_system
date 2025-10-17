@@ -11,9 +11,8 @@ const Registros = ({ auth, registros }) => {
         const badges = {
             em_andamento: { label: "Em Andamento", className: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" },
             concluida: { label: "Concluída", className: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400" },
-            pendente: { label: "Pendente", className: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400" },
         };
-        const badge = badges[status] || badges.pendente;
+        const badge = badges[status] || badges.em_andamento;
         return (
             <span className={`px-2 py-1 text-xs font-medium rounded ${badge.className}`}>
                 {badge.label}
@@ -74,7 +73,6 @@ const Registros = ({ auth, registros }) => {
                         <option value="all">Todos os Status</option>
                         <option value="em_andamento">Em Andamento</option>
                         <option value="concluida">Concluída</option>
-                        <option value="pendente">Pendente</option>
                     </select>
                 </div>
 
