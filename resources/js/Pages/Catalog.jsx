@@ -76,7 +76,73 @@ export default function Catalog({ auth, torres, grupos }) {
                     group: item.subgrupo?.grupo?.itemgrupo_nome || ''
                 })) || []
             })) || []
-        })) || []
+        })) || [],
+        environments: torres?.flatMap(torre =>
+            torre.ambientes?.map(ambiente => ({
+                id: `env-${ambiente.ambiente_id}`,
+                name: ambiente.ambiente_nome,
+                type: 'environment',
+                code: `ENV-${ambiente.ambiente_id}`,
+                description: ambiente.ambiente_descricao || '',
+                status: 'active',
+                tower: torre.torre_nome,
+                children: ambiente.items?.map(item => ({
+                    id: `item-${item.item_id}`,
+                    name: item.item_nome,
+                    type: 'item',
+                    code: `ITEM-${item.item_id}`,
+                    description: item.item_descricao || '',
+                    status: item.item_status,
+                })) || []
+            })) || []
+        ) || [],
+        groups: grupos?.map(grupo => ({
+            id: `group-${grupo.itemgrupo_id}`,
+            name: grupo.itemgrupo_nome,
+            type: 'group',
+            code: `GRP-${grupo.itemgrupo_id}`,
+            description: grupo.itemgrupo_descricao || '',
+            status: 'active',
+            children: grupo.subgrupos?.map(subgrupo => ({
+                id: `subgroup-${subgrupo.itemsubgrupo_id}`,
+                name: subgrupo.itemsubgrupo_nome,
+                type: 'subgroup',
+                code: `SUB-${subgrupo.itemsubgrupo_id}`,
+                description: subgrupo.itemsubgrupo_descricao || '',
+                status: 'active',
+            })) || []
+        })) || [],
+        subgroups: grupos?.flatMap(grupo =>
+            grupo.subgrupos?.map(subgrupo => ({
+                id: `subgroup-${subgrupo.itemsubgrupo_id}`,
+                name: subgrupo.itemsubgrupo_nome,
+                type: 'subgroup',
+                code: `SUB-${subgrupo.itemsubgrupo_id}`,
+                description: subgrupo.itemsubgrupo_descricao || '',
+                status: 'active',
+                group: grupo.itemgrupo_nome,
+            })) || []
+        ) || [],
+        items: torres?.flatMap(torre =>
+            torre.ambientes?.flatMap(ambiente =>
+                ambiente.items?.map(item => ({
+                    id: `item-${item.item_id}`,
+                    name: item.item_nome,
+                    type: 'item',
+                    code: `ITEM-${item.item_id}`,
+                    description: item.item_descricao || '',
+                    status: item.item_status,
+                    model: item.item_marcamodelo || '',
+                    photo: item.item_imagem || null,
+                    qrCode: item.item_qrcode || null,
+                    hasPhoto: !!item.item_imagem,
+                    subgroup: item.subgrupo?.itemsubgrupo_nome || '',
+                    group: item.subgrupo?.grupo?.itemgrupo_nome || '',
+                    environment: ambiente.ambiente_nome,
+                    tower: torre.torre_nome,
+                })) || []
+            ) || []
+        ) || []
     };
 
     // Calculate real counts
@@ -420,14 +486,78 @@ export default function Catalog({ auth, torres, grupos }) {
                                 <div className="max-h-96 overflow-y-auto">
                                     {viewMode === 'tree' ? (
                                         <div>
-                                            {catalogData.towers.map(tower => renderTreeItem(tower))}
+                                            {catalogData[selectedCategory]?.length > 0 ? (
+                                                catalogData[selectedCategory].map(item => renderTreeItem(item))
+                                            ) : (
+                                                <div className={`text-center ${colors.text.muted} py-12`}>
+                                                    <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                                                    <p className="text-lg font-medium mb-2">No items found</p>
+                                                    <p className="text-sm">Add items to see them here</p>
+                                                </div>
+                                            )}
                                         </div>
                                     ) : (
-                                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                            {/* Grid view would show cards here */}
-                                            <div className={`text-center ${colors.text.muted} col-span-full py-8`}>
-                                                Grid view implementation coming soon...
-                                            </div>
+                                        <div className="p-6">
+                                            {catalogData[selectedCategory]?.length > 0 ? (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                                    {catalogData[selectedCategory].map(item => (
+                                                        <div
+                                                            key={item.id}
+                                                            className={`${colors.card} rounded-lg border ${colors.border} p-4 hover:shadow-md transition-shadow`}
+                                                        >
+                                                            <div className="flex items-start justify-between mb-3">
+                                                                <div className="flex items-center space-x-2">
+                                                                    {getTypeIcon(item.type)}
+                                                                    <div>
+                                                                        <h3 className={`font-semibold ${colors.text.primary}`}>{item.name}</h3>
+                                                                        <p className={`text-xs ${colors.text.muted}`}>{item.code}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <span className={`px-2 py-1 text-xs rounded ${getStatusColor(item.status)}`}>
+                                                                    {item.status === 'active' ? 'Active' : item.status === 'ativo' ? 'Active' : 'Inactive'}
+                                                                </span>
+                                                            </div>
+                                                            {item.description && (
+                                                                <p className={`text-sm ${colors.text.secondary} mb-3`}>{item.description}</p>
+                                                            )}
+                                                            {item.tower && (
+                                                                <p className={`text-xs ${colors.text.muted}`}>Tower: {item.tower}</p>
+                                                            )}
+                                                            {item.environment && (
+                                                                <p className={`text-xs ${colors.text.muted}`}>Environment: {item.environment}</p>
+                                                            )}
+                                                            {item.group && (
+                                                                <p className={`text-xs ${colors.text.muted}`}>Group: {item.group}</p>
+                                                            )}
+                                                            {item.subgroup && (
+                                                                <p className={`text-xs ${colors.text.muted}`}>Subgroup: {item.subgroup}</p>
+                                                            )}
+                                                            {item.model && (
+                                                                <p className={`text-xs ${colors.text.muted}`}>Model: {item.model}</p>
+                                                            )}
+                                                            {item.hasPhoto && (
+                                                                <div className="mt-3 flex items-center text-xs text-teal-600">
+                                                                    <Camera className="w-3 h-3 mr-1" />
+                                                                    Has photo
+                                                                </div>
+                                                            )}
+                                                            {item.children && item.children.length > 0 && (
+                                                                <div className={`mt-3 pt-3 border-t ${colors.border}`}>
+                                                                    <p className={`text-xs ${colors.text.muted}`}>
+                                                                        {item.children.length} child item{item.children.length !== 1 ? 's' : ''}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className={`text-center ${colors.text.muted} py-12`}>
+                                                    <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                                                    <p className="text-lg font-medium mb-2">No items found</p>
+                                                    <p className="text-sm">Add items to see them here</p>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
