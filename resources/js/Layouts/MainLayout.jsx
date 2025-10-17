@@ -1,27 +1,20 @@
 import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { Button } from '@/Components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
     Building,
-    Building2,
     Home,
     Layers,
-    Calendar,
     Play,
-    Users,
     Settings,
     Menu,
     X,
     User,
     LogOut,
     ChevronDown,
-    FileText,
     ClipboardList,
     Moon,
-    Sun,
-    MapPin,
-    Package
+    Sun
 } from 'lucide-react';
 
 const MainLayout = ({ children, auth }) => {
@@ -55,24 +48,6 @@ const MainLayout = ({ children, auth }) => {
             href: '/catalog',
             icon: Layers,
             current: url === '/catalog'
-        },
-        {
-            name: 'Torres',
-            href: '/torres',
-            icon: Building2,
-            current: url === '/torres'
-        },
-        {
-            name: 'Ambientes',
-            href: '/ambientes',
-            icon: MapPin,
-            current: url === '/ambientes'
-        },
-        {
-            name: 'Itens',
-            href: '/items',
-            icon: Package,
-            current: url === '/items'
         },
         {
             name: 'Parâmetros',
