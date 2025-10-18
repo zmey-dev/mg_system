@@ -8,6 +8,7 @@ use App\Models\Origem;
 use App\Models\Periodo;
 use App\Models\Profissional;
 use App\Models\Tipo;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,6 +20,9 @@ class AtividadeController extends Controller
         $user = $request->user();
         $empreendimentoId = $user->empreendimento_id;
         $search = $request->input('search');
+        $dateFilter = $request->input('date_filter');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
         $query = Atividade::with([
             'item.ambiente.torre',
@@ -45,6 +49,73 @@ class AtividadeController extends Controller
             });
         }
 
+        // Date range filters
+        if ($dateFilter && $dateFilter !== 'all') {
+            $today = Carbon::today();
+
+            switch ($dateFilter) {
+                case 'today':
+                    $query->whereDate('atividade_dtestimada', $today);
+                    break;
+                case 'this_week':
+                    $query->whereBetween('atividade_dtestimada', [
+                        $today->startOfWeek(),
+                        $today->copy()->endOfWeek()
+                    ]);
+                    break;
+                case 'next_week':
+                    $nextWeek = $today->copy()->addWeek();
+                    $query->whereBetween('atividade_dtestimada', [
+                        $nextWeek->startOfWeek(),
+                        $nextWeek->endOfWeek()
+                    ]);
+                    break;
+                case 'this_month':
+                    $query->whereBetween('atividade_dtestimada', [
+                        $today->copy()->startOfMonth(),
+                        $today->copy()->endOfMonth()
+                    ]);
+                    break;
+                case 'next_month':
+                    $nextMonth = $today->copy()->addMonth();
+                    $query->whereBetween('atividade_dtestimada', [
+                        $nextMonth->startOfMonth(),
+                        $nextMonth->endOfMonth()
+                    ]);
+                    break;
+                case 'last_7_days':
+                    $query->whereBetween('atividade_dtestimada', [
+                        $today->copy()->subDays(7),
+                        $today
+                    ]);
+                    break;
+                case 'last_15_days':
+                    $query->whereBetween('atividade_dtestimada', [
+                        $today->copy()->subDays(15),
+                        $today
+                    ]);
+                    break;
+                case 'last_30_days':
+                    $query->whereBetween('atividade_dtestimada', [
+                        $today->copy()->subDays(30),
+                        $today
+                    ]);
+                    break;
+                case 'overdue':
+                    $query->where('atividade_dtestimada', '<', $today)
+                          ->where('atividade_status', '!=', 'concluida');
+                    break;
+                case 'custom':
+                    if ($startDate && $endDate) {
+                        $query->whereBetween('atividade_dtestimada', [
+                            Carbon::parse($startDate),
+                            Carbon::parse($endDate)
+                        ]);
+                    }
+                    break;
+            }
+        }
+
         $atividades = $query->orderBy('atividade_dtestimada', 'asc')
             ->paginate(20);
 
@@ -54,6 +125,9 @@ class AtividadeController extends Controller
             'doctoTipos' => DoctoTipo::all(),
             'periodos' => Periodo::all(),
             'profissionais' => Profissional::all(),
+            'date_filter' => $dateFilter,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
         ];
 
         return Inertia::render('Activities', [

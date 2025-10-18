@@ -37,6 +37,9 @@ import { formatDate } from "@/utils/dateFormat";
 const Activities = ({ auth, atividades, filters }) => {
     const { isDark, colors } = useTheme();
     const [statusFilter, setStatusFilter] = useState("all");
+    const [dateFilter, setDateFilter] = useState(filters?.date_filter || "all");
+    const [startDate, setStartDate] = useState(filters?.start_date || "");
+    const [endDate, setEndDate] = useState(filters?.end_date || "");
     const [selectedActivity, setSelectedActivity] = useState(null);
     const [showExecutionModal, setShowExecutionModal] = useState(false);
     const [showNewActivityModal, setShowNewActivityModal] = useState(false);
@@ -192,12 +195,21 @@ const Activities = ({ auth, atividades, filters }) => {
     };
 
     const filteredActivities = activities.filter((activity) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const isOverdue = activity.status !== "concluida" && new Date(activity.dueDate) < today;
+
         const matchesStatus =
-            statusFilter === "all" || activity.status === statusFilter;
+            statusFilter === "all" ||
+            activity.status === statusFilter ||
+            (statusFilter === "atrasadas" && isOverdue);
         return matchesStatus;
     });
 
     const getStatusStats = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         const ativa = activities.filter(
             (a) => a.status === "ativa"
         ).length;
@@ -207,8 +219,11 @@ const Activities = ({ auth, atividades, filters }) => {
         const concluida = activities.filter(
             (a) => a.status === "concluida"
         ).length;
+        const atrasadas = activities.filter(
+            (a) => a.status !== "concluida" && new Date(a.dueDate) < today
+        ).length;
 
-        return { ativa, bloqueada, concluida };
+        return { ativa, bloqueada, concluida, atrasadas };
     };
 
     const stats = getStatusStats();
@@ -262,6 +277,31 @@ const Activities = ({ auth, atividades, filters }) => {
         const sizes = ["Bytes", "KB", "MB", "GB"];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    };
+
+    const handleDateFilterChange = (value) => {
+        setDateFilter(value);
+        if (value !== 'custom') {
+            router.get(route('activities'), {
+                date_filter: value !== 'all' ? value : undefined,
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const handleCustomDateApply = () => {
+        if (startDate && endDate) {
+            router.get(route('activities'), {
+                date_filter: 'custom',
+                start_date: startDate,
+                end_date: endDate,
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
     };
 
     // Render action buttons based on activity status
@@ -363,7 +403,7 @@ const Activities = ({ auth, atividades, filters }) => {
                 </div>
 
                 {/* Status Cards - Minimal */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-8 sm:mb-12">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-8 sm:mb-12">
                     <div
                         className={`${colors.card} border ${colors.border} rounded-lg p-2 sm:p-3`}
                     >
@@ -417,6 +457,85 @@ const Activities = ({ auth, atividades, filters }) => {
                             </div>
                         </div>
                     </div>
+
+                    <div
+                        className={`${colors.card} border ${colors.border} rounded-lg p-2 sm:p-3`}
+                    >
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="flex-1">
+                                <p className="text-xs text-gray-500 mb-1">
+                                    Atrasadas
+                                </p>
+                                <p className="text-lg sm:text-xl font-semibold text-red-600">
+                                    {stats.atrasadas}
+                                </p>
+                            </div>
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Date Filters */}
+                <div className={`${colors.card} border ${colors.border} rounded-lg p-3 sm:p-4`}>
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <select
+                                value={dateFilter}
+                                onChange={(e) => handleDateFilterChange(e.target.value)}
+                                className={`flex-1 px-3 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary}`}
+                            >
+                                <option value="all">Todos os Períodos</option>
+                                <option value="today">Hoje</option>
+                                <option value="this_week">Esta Semana</option>
+                                <option value="next_week">Próxima Semana</option>
+                                <option value="this_month">Este Mês</option>
+                                <option value="next_month">Próximo Mês</option>
+                                <option value="last_7_days">Últimos 7 Dias</option>
+                                <option value="last_15_days">Últimos 15 Dias</option>
+                                <option value="last_30_days">Últimos 30 Dias</option>
+                                <option value="overdue">Atrasadas</option>
+                                <option value="custom">Período Personalizado</option>
+                            </select>
+                        </div>
+
+                        {dateFilter === 'custom' && (
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <div className="flex-1">
+                                    <label className={`block text-xs ${colors.text.secondary} mb-1`}>
+                                        Data Inicial
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className={`w-full px-3 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary}`}
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <label className={`block text-xs ${colors.text.secondary} mb-1`}>
+                                        Data Final
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className={`w-full px-3 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary}`}
+                                    />
+                                </div>
+                                <div className="flex items-end">
+                                    <Button
+                                        onClick={handleCustomDateApply}
+                                        disabled={!startDate || !endDate}
+                                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        Aplicar
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Activities List - Compact Card Layout */}
@@ -433,16 +552,17 @@ const Activities = ({ auth, atividades, filters }) => {
                             </span>
                         </h2>
 
-                        {/* Filter - Right Aligned */}
+                        {/* Status Filter - Right Aligned */}
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className={`w-full sm:w-36 border ${colors.border} ${colors.surface} ${colors.text.primary} h-9 sm:h-8 text-sm sm:text-xs px-3 rounded-md`}
+                            className={`w-full sm:w-40 border ${colors.border} ${colors.surface} ${colors.text.primary} h-9 sm:h-8 text-sm sm:text-xs px-3 rounded-md`}
                         >
                             <option value="all">Todos os Status</option>
                             <option value="ativa">Ativa</option>
                             <option value="bloqueada">Bloqueada</option>
                             <option value="concluida">Concluída</option>
+                            <option value="atrasadas">Atrasadas</option>
                         </select>
                     </div>
 

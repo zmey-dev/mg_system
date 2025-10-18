@@ -61,7 +61,7 @@ class DashboardController extends Controller
         $nextMonthEnd = Carbon::today()->addMonth()->endOfMonth();
 
         $atrasadas = (clone $query)
-            ->where('atividade_status', 'ativa')
+            ->where('atividade_status', '!=', 'concluida')
             ->where('atividade_dtestimada', '<', $today)
             ->count();
 

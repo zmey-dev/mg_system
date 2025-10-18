@@ -2,11 +2,15 @@ import React, { useState } from "react";
 import MainLayout from "@/Layouts/MainLayout";
 import { router } from "@inertiajs/react";
 import { Play, CheckCircle, Clock, FileText, User, Calendar, Search } from "lucide-react";
+import { Button } from "@/Components/ui/button";
 import { formatDate } from "@/utils/dateFormat";
 
-const Registros = ({ auth, registros }) => {
+const Registros = ({ auth, registros, filters }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
+    const [dateFilter, setDateFilter] = useState(filters?.date_filter || "all");
+    const [startDate, setStartDate] = useState(filters?.start_date || "");
+    const [endDate, setEndDate] = useState(filters?.end_date || "");
 
     const getStatusBadge = (status) => {
         const badges = {
@@ -33,6 +37,31 @@ const Registros = ({ auth, registros }) => {
     };
 
 
+    const handleDateFilterChange = (value) => {
+        setDateFilter(value);
+        if (value !== 'custom') {
+            router.get(route('registros.index'), {
+                date_filter: value !== 'all' ? value : undefined,
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const handleCustomDateApply = () => {
+        if (startDate && endDate) {
+            router.get(route('registros.index'), {
+                date_filter: 'custom',
+                start_date: startDate,
+                end_date: endDate,
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
+    };
+
     const filteredRegistros = registros.data?.filter(registro => {
         const matchesSearch =
             registro.atividade?.atividade_descricao?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,7 +79,65 @@ const Registros = ({ auth, registros }) => {
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Registros de Execução</h1>
                 </div>
 
-                {/* Filters */}
+                {/* Date Filters */}
+                <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 p-4">
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <select
+                                value={dateFilter}
+                                onChange={(e) => handleDateFilterChange(e.target.value)}
+                                className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            >
+                                <option value="all">Todos os Períodos</option>
+                                <option value="today">Hoje</option>
+                                <option value="this_week">Esta Semana</option>
+                                <option value="this_month">Este Mês</option>
+                                <option value="last_7_days">Últimos 7 Dias</option>
+                                <option value="last_15_days">Últimos 15 Dias</option>
+                                <option value="last_30_days">Últimos 30 Dias</option>
+                                <option value="custom">Período Personalizado</option>
+                            </select>
+                        </div>
+
+                        {dateFilter === 'custom' && (
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <div className="flex-1">
+                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                        Data Inicial
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                        Data Final
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                    />
+                                </div>
+                                <div className="flex items-end">
+                                    <Button
+                                        onClick={handleCustomDateApply}
+                                        disabled={!startDate || !endDate}
+                                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        Aplicar
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Search and Status Filters */}
                 <div className="mb-6 flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />

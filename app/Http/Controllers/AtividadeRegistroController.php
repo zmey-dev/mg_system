@@ -15,6 +15,9 @@ class AtividadeRegistroController extends Controller
     {
         $user = $request->user();
         $empreendimentoId = $user->empreendimento_id;
+        $dateFilter = $request->input('date_filter');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
         $query = AtividadeRegistro::with([
             'atividade.item.ambiente.torre',
@@ -29,11 +32,65 @@ class AtividadeRegistroController extends Controller
             });
         }
 
+        // Date range filters (based on atividaderegistro_dtinicio)
+        if ($dateFilter && $dateFilter !== 'all') {
+            $today = Carbon::today();
+
+            switch ($dateFilter) {
+                case 'today':
+                    $query->whereDate('atividaderegistro_dtinicio', $today);
+                    break;
+                case 'this_week':
+                    $query->whereBetween('atividaderegistro_dtinicio', [
+                        $today->startOfWeek(),
+                        $today->copy()->endOfWeek()
+                    ]);
+                    break;
+                case 'this_month':
+                    $query->whereBetween('atividaderegistro_dtinicio', [
+                        $today->copy()->startOfMonth(),
+                        $today->copy()->endOfMonth()
+                    ]);
+                    break;
+                case 'last_7_days':
+                    $query->whereBetween('atividaderegistro_dtinicio', [
+                        $today->copy()->subDays(7),
+                        $today
+                    ]);
+                    break;
+                case 'last_15_days':
+                    $query->whereBetween('atividaderegistro_dtinicio', [
+                        $today->copy()->subDays(15),
+                        $today
+                    ]);
+                    break;
+                case 'last_30_days':
+                    $query->whereBetween('atividaderegistro_dtinicio', [
+                        $today->copy()->subDays(30),
+                        $today
+                    ]);
+                    break;
+                case 'custom':
+                    if ($startDate && $endDate) {
+                        $query->whereBetween('atividaderegistro_dtinicio', [
+                            Carbon::parse($startDate),
+                            Carbon::parse($endDate)
+                        ]);
+                    }
+                    break;
+            }
+        }
+
         $registros = $query->orderBy('atividaderegistro_dtinicio', 'desc')
             ->paginate(20);
 
         return Inertia::render('Registros', [
             'registros' => $registros,
+            'filters' => [
+                'date_filter' => $dateFilter,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
         ]);
     }
 
