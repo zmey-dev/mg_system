@@ -16,10 +16,12 @@ import {
     Plus
 } from 'lucide-react';
 
-export default function Dashboard({ auth, stats, recentes, torres }) {
+export default function Dashboard({ auth, stats, recentes, torres, grupos, subgrupos, filters }) {
     const { isDark, colors } = useTheme();
     const [selectedFilter, setSelectedFilter] = useState('all');
     const [selectedBuilding, setSelectedBuilding] = useState('all');
+    const [selectedGrupo, setSelectedGrupo] = useState(filters?.grupo_id || 'all');
+    const [selectedSubgrupo, setSelectedSubgrupo] = useState(filters?.subgrupo_id || 'all');
     const [showMoreFilters, setShowMoreFilters] = useState(false);
     const [selectedActivityMenu, setSelectedActivityMenu] = useState(null);
 
@@ -38,8 +40,15 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
         technician: atividade.profissional?.profissional_tipo || 'N/A',
         dueDate: atividade.atividade_dtestimada,
         location: `${atividade.item?.ambiente?.torre?.torre_nome || ''} - ${atividade.item?.ambiente?.ambiente_nome || ''}`,
-        torreId: atividade.item?.ambiente?.torre?.torre_id
+        torreId: atividade.item?.ambiente?.torre?.torre_id,
+        grupoId: atividade.item?.subgrupo?.itemgrupo_id,
+        subgrupoId: atividade.item?.itemsubgrupo_id
     })) || [];
+
+    // Filter subgrupos based on selected grupo
+    const filteredSubgrupos = selectedGrupo === 'all'
+        ? subgrupos
+        : subgrupos?.filter(sub => sub.itemgrupo_id?.toString() === selectedGrupo);
 
     // Filter activities based on selected filters
     const recentActivities = allActivities.filter(activity => {
@@ -53,8 +62,26 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
         const buildingMatch = selectedBuilding === 'all' ||
             activity.torreId?.toString() === selectedBuilding;
 
-        return priorityMatch && buildingMatch;
+        // Group filter
+        const grupoMatch = selectedGrupo === 'all' ||
+            activity.grupoId?.toString() === selectedGrupo;
+
+        // Subgroup filter
+        const subgrupoMatch = selectedSubgrupo === 'all' ||
+            activity.subgrupoId?.toString() === selectedSubgrupo;
+
+        return priorityMatch && buildingMatch && grupoMatch && subgrupoMatch;
     });
+
+    const handleFilterChange = () => {
+        router.get(route('dashboard'), {
+            grupo_id: selectedGrupo !== 'all' ? selectedGrupo : undefined,
+            subgrupo_id: selectedSubgrupo !== 'all' ? selectedSubgrupo : undefined,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
 
     const getPriorityColor = (priority) => {
         switch (priority) {
@@ -194,53 +221,96 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
                                 />
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                                <select
-                                    value={selectedBuilding}
-                                    onChange={(e) => setSelectedBuilding(e.target.value)}
-                                    className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
-                                >
-                                    <option value="all">Todas as Torres</option>
-                                    {torres?.map(torre => (
-                                        <option key={torre.torre_id} value={torre.torre_id}>
-                                            {torre.torre_nome}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <select
-                                    value={selectedFilter}
-                                    onChange={(e) => setSelectedFilter(e.target.value)}
-                                    className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
-                                >
-                                    <option value="all">Todas as Prioridades</option>
-                                    <option value="high">Alta</option>
-                                    <option value="medium">Média</option>
-                                    <option value="low">Baixa</option>
-                                </select>
-
-                                <div className="relative w-full sm:w-auto">
-                                    <button
-                                        onClick={() => setShowMoreFilters(!showMoreFilters)}
-                                        className={`px-3 py-2 text-sm border ${colors.border} rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center w-full sm:w-auto justify-center`}
+                            <div className="flex flex-col gap-2">
+                                {/* First row - Torre and Priority */}
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                    <select
+                                        value={selectedBuilding}
+                                        onChange={(e) => setSelectedBuilding(e.target.value)}
+                                        className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
                                     >
-                                        <Filter className="w-3.5 h-3.5 mr-1.5" />
-                                        <span className="text-xs">Mais</span>
-                                    </button>
-                                    {showMoreFilters && (
-                                        <div className={`absolute right-0 mt-2 w-48 ${colors.card} border ${colors.border} rounded-lg shadow-lg z-10 p-2`}>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedFilter('all');
-                                                    setSelectedBuilding('all');
-                                                    setShowMoreFilters(false);
-                                                }}
-                                                className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${colors.text.primary}`}
-                                            >
-                                                Limpar Filtros
-                                            </button>
-                                        </div>
-                                    )}
+                                        <option value="all">Todas as Torres</option>
+                                        {torres?.map(torre => (
+                                            <option key={torre.torre_id} value={torre.torre_id}>
+                                                {torre.torre_nome}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <select
+                                        value={selectedFilter}
+                                        onChange={(e) => setSelectedFilter(e.target.value)}
+                                        className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
+                                    >
+                                        <option value="all">Todas as Prioridades</option>
+                                        <option value="high">Alta</option>
+                                        <option value="medium">Média</option>
+                                        <option value="low">Baixa</option>
+                                    </select>
+                                </div>
+
+                                {/* Second row - Group, Subgroup, More button */}
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                    <select
+                                        value={selectedGrupo}
+                                        onChange={(e) => {
+                                            setSelectedGrupo(e.target.value);
+                                            setSelectedSubgrupo('all');
+                                            handleFilterChange();
+                                        }}
+                                        className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
+                                    >
+                                        <option value="all">Todos os Grupos</option>
+                                        {grupos?.map(grupo => (
+                                            <option key={grupo.itemgrupo_id} value={grupo.itemgrupo_id}>
+                                                {grupo.itemgrupo_nome}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <select
+                                        value={selectedSubgrupo}
+                                        onChange={(e) => {
+                                            setSelectedSubgrupo(e.target.value);
+                                            handleFilterChange();
+                                        }}
+                                        disabled={selectedGrupo === 'all'}
+                                        className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0 ${selectedGrupo === 'all' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        <option value="all">Todos os Subgrupos</option>
+                                        {filteredSubgrupos?.map(subgrupo => (
+                                            <option key={subgrupo.itemsubgrupo_id} value={subgrupo.itemsubgrupo_id}>
+                                                {subgrupo.itemsubgrupo_nome}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <div className="relative w-full sm:w-auto">
+                                        <button
+                                            onClick={() => setShowMoreFilters(!showMoreFilters)}
+                                            className={`px-3 py-2 text-sm border ${colors.border} rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center w-full sm:w-auto justify-center`}
+                                        >
+                                            <Filter className="w-3.5 h-3.5 mr-1.5" />
+                                            <span className="text-xs">Mais</span>
+                                        </button>
+                                        {showMoreFilters && (
+                                            <div className={`absolute right-0 mt-2 w-48 ${colors.card} border ${colors.border} rounded-lg shadow-lg z-10 p-2`}>
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedFilter('all');
+                                                        setSelectedBuilding('all');
+                                                        setSelectedGrupo('all');
+                                                        setSelectedSubgrupo('all');
+                                                        setShowMoreFilters(false);
+                                                        router.get(route('dashboard'));
+                                                    }}
+                                                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${colors.text.primary}`}
+                                                >
+                                                    Limpar Filtros
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
