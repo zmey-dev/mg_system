@@ -967,7 +967,7 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                             <div className="space-y-4">
                                 {selectedCategory === 'towers' && (
                                     <>
-                                        {(auth.user.role === 'master' || empreendimentos?.length > 1) && (
+                                        {empreendimentos?.length > 0 && (
                                             <div>
                                                 <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Empreendimento *</label>
                                                 <Select

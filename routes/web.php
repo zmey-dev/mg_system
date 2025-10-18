@@ -35,6 +35,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/registros/{id}', [AtividadeRegistroController::class, 'show'])->name('registros.show');
     Route::put('/registros/{id}', [AtividadeRegistroController::class, 'update'])->name('registros.update');
     Route::post('/registros/{id}/complete', [AtividadeRegistroController::class, 'complete'])->name('registros.complete');
+    Route::get('/attachments/{id}/download', [AtividadeRegistroController::class, 'downloadAttachment'])->name('attachments.download');
 
     // Torres, Ambientes, Items - managed through Catalog page
     Route::post('/torres', [TorreController::class, 'store'])->name('torres.store');

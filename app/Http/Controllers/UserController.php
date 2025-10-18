@@ -54,14 +54,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users',
             'role' => 'required|in:master,sindico,gestor,auditor',
-            'empreendimento_id' => 'nullable|exists:empreendimentos,empreendimento_id',
+            'empreendimento_id' => 'nullable|exists:empreendimento,empreendimento_id',
             'is_active' => 'boolean',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make('00000'),
+            'password' => Hash::make('000000'),
             'role' => $validated['role'],
             'empreendimento_id' => $validated['empreendimento_id'],
             'is_active' => $validated['is_active'] ?? true,
@@ -102,7 +102,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $id,
             'role' => 'required|in:master,sindico,gestor,auditor',
-            'empreendimento_id' => 'nullable|exists:empreendimentos,empreendimento_id',
+            'empreendimento_id' => 'nullable|exists:empreendimento,empreendimento_id',
             'is_active' => 'boolean',
         ]);
 

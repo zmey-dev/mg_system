@@ -139,7 +139,7 @@ export default function Create({ auth, empreendimentos }) {
                                 </label>
                                 <InputError message={errors.is_active} className="mt-2" />
                                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                    Default password will be set to: <strong>00000</strong>
+                                    Default password will be set to: <strong>000000</strong>
                                 </p>
                             </div>
                         </div>

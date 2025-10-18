@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Atividade;
+use App\Models\Attachment;
 use App\Models\AtividadeRegistro;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -117,12 +119,19 @@ class AtividadeRegistroController extends Controller
     {
         $registro = AtividadeRegistro::with([
             'atividade.item.ambiente.torre',
+            'atividade.item.subgrupo.grupo',
+            'atividade.origem',
+            'atividade.tipo',
+            'atividade.doctoTipo',
             'atividade.periodo',
+            'atividade.profissional',
             'usuario',
             'attachments'
         ])->findOrFail($id);
 
-        return response()->json($registro);
+        return Inertia::render('RegistroDetail', [
+            'registro' => $registro,
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -149,6 +158,19 @@ class AtividadeRegistroController extends Controller
             'costs_json' => 'nullable|array',
         ]);
 
+        // Validate files separately to handle array structure properly
+        if ($request->hasFile('photos')) {
+            $request->validate([
+                'photos.*' => 'image|max:5120',
+            ]);
+        }
+
+        if ($request->hasFile('documents')) {
+            $request->validate([
+                'documents.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+            ]);
+        }
+
         $validated['status'] = 'concluida';
 
         $dtRealizada = Carbon::parse($validated['atividaderegistro_dtrealizada']);
@@ -160,13 +182,53 @@ class AtividadeRegistroController extends Controller
 
         $registro->update($validated);
 
+        // Process photo uploads
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('registros/photos', 'public');
+                Attachment::create([
+                    'atividaderegistro_id' => $registro->atividaderegistro_id,
+                    'attachment_nome' => $photo->getClientOriginalName(),
+                    'attachment_caminho' => $path,
+                    'attachment_tipo' => 'photo',
+                    'attachment_tamanho' => $photo->getSize(),
+                ]);
+            }
+        }
+
+        // Process document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $doc) {
+                $path = $doc->store('registros/documents', 'public');
+                Attachment::create([
+                    'atividaderegistro_id' => $registro->atividaderegistro_id,
+                    'attachment_nome' => $doc->getClientOriginalName(),
+                    'attachment_caminho' => $path,
+                    'attachment_tipo' => 'document',
+                    'attachment_tamanho' => $doc->getSize(),
+                ]);
+            }
+        }
+
         $atividade = $registro->atividade;
-        if ($validated['atividaderegistro_dtproxima']) {
+        if (isset($validated['atividaderegistro_dtproxima'])) {
             $atividade->update([
                 'atividade_dtestimada' => $validated['atividaderegistro_dtproxima']
             ]);
         }
 
         return redirect()->route('registros.index')->with('success', 'Registro completed successfully.');
+    }
+
+    public function downloadAttachment($id)
+    {
+        $attachment = Attachment::findOrFail($id);
+        $filePath = storage_path('app/public/' . $attachment->attachment_caminho);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found');
+        }
+
+        return response()->download($filePath, $attachment->attachment_nome);
     }
 }

@@ -37,11 +37,18 @@ class TorreController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+
         $validated = $request->validate([
             'empreendimento_id' => 'required|exists:empreendimento,empreendimento_id',
             'torre_nome' => 'required|string|max:100',
             'torre_qtdaptos' => 'nullable|integer|min:1',
         ]);
+
+        // Non-master users can only create torres for their own empreendimento
+        if ($user->role !== 'master' && $user->empreendimento_id != $validated['empreendimento_id']) {
+            return back()->withErrors(['empreendimento_id' => 'Você só pode criar torres para seu próprio empreendimento.']);
+        }
 
         Torre::create($validated);
 
