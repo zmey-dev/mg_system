@@ -6,30 +6,26 @@ import { Button } from '@/Components/ui/button';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
-import { ArrowLeft, UserPlus } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 
-export default function Create({ auth, empreendimentos }) {
+export default function Edit({ auth, user, empreendimentos }) {
     const { isDark, colors } = useTheme();
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        role: 'gestor',
-        empreendimento_id: '',
-        is_active: true,
+    const { data, setData, put, processing, errors } = useForm({
+        name: user.name || '',
+        email: user.email || '',
+        role: user.role || 'gestor',
+        empreendimento_id: user.empreendimento_id || '',
+        is_active: user.is_active ?? true,
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('users.store'), {
-            onSuccess: () => {
-                reset();
-            }
-        });
+        put(route('users.update', user.id));
     };
 
     return (
         <MainLayout auth={auth}>
-            <Head title="Create User" />
+            <Head title="Edit User" />
 
             <div className="space-y-4 sm:space-y-6">
                 {/* Header */}
@@ -43,10 +39,10 @@ export default function Create({ auth, empreendimentos }) {
                     </button>
                     <div>
                         <h1 className={`text-2xl sm:text-3xl font-semibold ${colors.text.primary}`}>
-                            Create New User
+                            Edit User
                         </h1>
                         <p className={`${colors.text.secondary} mt-1 text-sm sm:text-base`}>
-                            Add a new user to the system
+                            Update user information
                         </p>
                     </div>
                 </div>
@@ -138,9 +134,6 @@ export default function Create({ auth, empreendimentos }) {
                                     </span>
                                 </label>
                                 <InputError message={errors.is_active} className="mt-2" />
-                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                    Default password will be set to: <strong>00000</strong>
-                                </p>
                             </div>
                         </div>
 
@@ -151,8 +144,8 @@ export default function Create({ auth, empreendimentos }) {
                                 disabled={processing}
                                 className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-sm w-full sm:w-auto justify-center"
                             >
-                                <UserPlus className="w-4 h-4 sm:mr-2" />
-                                <span>Create User</span>
+                                <Save className="w-4 h-4 sm:mr-2" />
+                                <span>Update User</span>
                             </Button>
                             <Button
                                 type="button"

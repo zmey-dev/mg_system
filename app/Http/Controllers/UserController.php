@@ -53,7 +53,6 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => 'required|in:master,sindico,gestor,auditor',
             'empreendimento_id' => 'nullable|exists:empreendimentos,empreendimento_id',
             'is_active' => 'boolean',
@@ -62,7 +61,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make('00000'),
             'role' => $validated['role'],
             'empreendimento_id' => $validated['empreendimento_id'],
             'is_active' => $validated['is_active'] ?? true,
@@ -102,25 +101,18 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $id,
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'role' => 'required|in:master,sindico,gestor,auditor',
             'empreendimento_id' => 'nullable|exists:empreendimentos,empreendimento_id',
             'is_active' => 'boolean',
         ]);
 
-        $updateData = [
+        $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
             'empreendimento_id' => $validated['empreendimento_id'],
             'is_active' => $validated['is_active'] ?? $user->is_active,
-        ];
-
-        if (!empty($validated['password'])) {
-            $updateData['password'] = Hash::make($validated['password']);
-        }
-
-        $user->update($updateData);
+        ]);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }

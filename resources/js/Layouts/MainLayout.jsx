@@ -176,9 +176,16 @@ const MainLayout = ({ children, auth }) => {
 
                                 {userMenuOpen && (
                                     <div className="absolute bottom-full left-0 right-0 mb-2 bg-blue-950 border border-blue-800/50 rounded-lg shadow-lg">
+                                        <Link
+                                            href="/profile"
+                                            className="flex w-full items-center gap-3 px-4 py-3 text-sm text-blue-100 hover:bg-white/10 hover:text-white rounded-t-lg transition-colors duration-200"
+                                        >
+                                            <User className="w-4 h-4" />
+                                            Perfil
+                                        </Link>
                                         <button
                                             onClick={handleLogout}
-                                            className="flex w-full items-center gap-3 px-4 py-3 text-sm text-blue-100 hover:bg-white/10 hover:text-white rounded-lg transition-colors duration-200"
+                                            className="flex w-full items-center gap-3 px-4 py-3 text-sm text-blue-100 hover:bg-white/10 hover:text-white rounded-b-lg transition-colors duration-200 border-t border-blue-800/30"
                                         >
                                             <LogOut className="w-4 h-4" />
                                             Sair
