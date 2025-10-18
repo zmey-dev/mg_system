@@ -37,7 +37,10 @@ class DashboardController extends Controller
         }
 
         $today = Carbon::today();
-        $weekEnd = Carbon::today()->addDays(7);
+        $nextWeekStart = Carbon::today()->addWeek()->startOfWeek();
+        $nextWeekEnd = Carbon::today()->addWeek()->endOfWeek();
+        $nextMonthStart = Carbon::today()->addMonth()->startOfMonth();
+        $nextMonthEnd = Carbon::today()->addMonth()->endOfMonth();
 
         $atrasadas = (clone $query)
             ->where('atividade_status', 'ativa')
@@ -49,15 +52,16 @@ class DashboardController extends Controller
             ->whereDate('atividade_dtestimada', $today)
             ->count();
 
-        $semana = (clone $query)
+        $proximaSemana = (clone $query)
             ->where('atividade_status', 'ativa')
-            ->where('atividade_dtestimada', '>', $today)
-            ->where('atividade_dtestimada', '<=', $weekEnd)
+            ->where('atividade_dtestimada', '>=', $nextWeekStart)
+            ->where('atividade_dtestimada', '<=', $nextWeekEnd)
             ->count();
 
-        $proximas = (clone $query)
+        $proximoMes = (clone $query)
             ->where('atividade_status', 'ativa')
-            ->where('atividade_dtestimada', '>', $weekEnd)
+            ->where('atividade_dtestimada', '>=', $nextMonthStart)
+            ->where('atividade_dtestimada', '<=', $nextMonthEnd)
             ->count();
 
         $recentes = $query
@@ -79,8 +83,8 @@ class DashboardController extends Controller
             'stats' => [
                 'atrasadas' => $atrasadas,
                 'hoje' => $hoje,
-                'semana' => $semana,
-                'proximas' => $proximas,
+                'proximaSemana' => $proximaSemana,
+                'proximoMes' => $proximoMes,
             ],
             'recentes' => $recentes,
             'torres' => $torres,

@@ -25,8 +25,8 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
 
     const statusCounts = {
         today: stats?.hoje || 0,
-        thisWeek: stats?.semana || 0,
-        upcoming: stats?.proximas || 0,
+        nextWeek: stats?.proximaSemana || 0,
+        nextMonth: stats?.proximoMes || 0,
         overdue: stats?.atrasadas || 0
     };
 
@@ -155,12 +155,12 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
                             </div>
                         </div>
 
-                        {/* This Week */}
+                        {/* Next Week */}
                         <div className={`${colors.card} border ${colors.border} rounded-lg p-3 sm:p-4`}>
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div className="flex-1">
-                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">Esta Semana</p>
-                                    <p className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.thisWeek}</p>
+                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">Próxima Semana</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.nextWeek}</p>
                                 </div>
                                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center flex-shrink-0">
                                     <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400" />
@@ -168,12 +168,12 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
                             </div>
                         </div>
 
-                        {/* Upcoming */}
+                        {/* Next Month */}
                         <div className={`${colors.card} border ${colors.border} rounded-lg p-3 sm:p-4`}>
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div className="flex-1">
-                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">Próximas</p>
-                                    <p className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">{statusCounts.upcoming}</p>
+                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">Próximo Mês</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">{statusCounts.nextMonth}</p>
                                 </div>
                                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center flex-shrink-0">
                                     <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
