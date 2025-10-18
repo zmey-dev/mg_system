@@ -9,7 +9,15 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            MasterDataSeeder::class,
+            // 1. First seed parameters (needed for items)
+            ParameterSeeder::class,
+
+            // 2. Seed grupos and subgrupos
+            ItemGrupoSeeder::class,
+            ItemSubgrupoSeeder::class,
+
+            // 3. Optional: Seed master data if exists
+            // MasterDataSeeder::class,
         ]);
     }
 }
