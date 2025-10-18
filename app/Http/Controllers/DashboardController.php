@@ -19,8 +19,8 @@ class DashboardController extends Controller
 
         $query = Atividade::with(['item.ambiente.torre', 'tipo', 'profissional']);
 
-        // Only filter by empreendimento for non-master users
-        if ($empreendimentoId) {
+        // Master can see all activities, others see only their empreendimento
+        if ($user->role !== 'master' && $empreendimentoId) {
             $query->whereHas('item.ambiente.torre', function ($q) use ($empreendimentoId) {
                 $q->where('empreendimento_id', $empreendimentoId);
             });
@@ -66,9 +66,14 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        $torres = Torre::where('empreendimento_id', $empreendimentoId)
-            ->select('torre_id', 'torre_nome')
-            ->get();
+        // Master can see all torres, others see only their empreendimento
+        if ($user->role === 'master') {
+            $torres = Torre::select('torre_id', 'torre_nome')->get();
+        } else {
+            $torres = Torre::where('empreendimento_id', $empreendimentoId)
+                ->select('torre_id', 'torre_nome')
+                ->get();
+        }
 
         return Inertia::render('Dashboard', [
             'stats' => [

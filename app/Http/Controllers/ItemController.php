@@ -63,7 +63,7 @@ class ItemController extends Controller
 
         Item::create($validated);
 
-        return redirect()->route('items.index')->with('success', 'Item criado com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Item criado com sucesso.');
     }
 
     public function show($id)
@@ -71,7 +71,9 @@ class ItemController extends Controller
         $item = Item::with(['ambiente.torre.empreendimento', 'subgrupo.grupo', 'atividades'])
             ->findOrFail($id);
 
-        return response()->json($item);
+        return Inertia::render('ItemDetail', [
+            'item' => $item
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -95,7 +97,7 @@ class ItemController extends Controller
 
         $item->update($validated);
 
-        return redirect()->route('items.index')->with('success', 'Item atualizado com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Item atualizado com sucesso.');
     }
 
     public function destroy($id)
@@ -108,6 +110,6 @@ class ItemController extends Controller
 
         $item->delete();
 
-        return redirect()->route('items.index')->with('success', 'Item excluído com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Item excluído com sucesso.');
     }
 }

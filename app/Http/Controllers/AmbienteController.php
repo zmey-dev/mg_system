@@ -47,7 +47,7 @@ class AmbienteController extends Controller
 
         Ambiente::create($validated);
 
-        return redirect()->route('ambientes.index')->with('success', 'Ambiente criado com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Ambiente criado com sucesso.');
     }
 
     public function show($id)
@@ -68,7 +68,7 @@ class AmbienteController extends Controller
 
         $ambiente->update($validated);
 
-        return redirect()->route('ambientes.index')->with('success', 'Ambiente atualizado com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Ambiente atualizado com sucesso.');
     }
 
     public function destroy($id)
@@ -76,6 +76,6 @@ class AmbienteController extends Controller
         $ambiente = Ambiente::findOrFail($id);
         $ambiente->delete();
 
-        return redirect()->route('ambientes.index')->with('success', 'Ambiente excluído com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Ambiente excluído com sucesso.');
     }
 }

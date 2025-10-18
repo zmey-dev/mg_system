@@ -35,19 +35,15 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/registros/{id}', [AtividadeRegistroController::class, 'update'])->name('registros.update');
     Route::post('/registros/{id}/complete', [AtividadeRegistroController::class, 'complete'])->name('registros.complete');
 
-    Route::get('/torres', [TorreController::class, 'index'])->name('torres.index');
+    // Torres, Ambientes, Items - managed through Catalog page
     Route::post('/torres', [TorreController::class, 'store'])->name('torres.store');
-    Route::get('/torres/{id}', [TorreController::class, 'show'])->name('torres.show');
     Route::put('/torres/{id}', [TorreController::class, 'update'])->name('torres.update');
     Route::delete('/torres/{id}', [TorreController::class, 'destroy'])->name('torres.destroy');
 
-    Route::get('/ambientes', [AmbienteController::class, 'index'])->name('ambientes.index');
     Route::post('/ambientes', [AmbienteController::class, 'store'])->name('ambientes.store');
-    Route::get('/ambientes/{id}', [AmbienteController::class, 'show'])->name('ambientes.show');
     Route::put('/ambientes/{id}', [AmbienteController::class, 'update'])->name('ambientes.update');
     Route::delete('/ambientes/{id}', [AmbienteController::class, 'destroy'])->name('ambientes.destroy');
 
-    Route::get('/items', [ItemController::class, 'index'])->name('items.index');
     Route::post('/items', [ItemController::class, 'store'])->name('items.store');
     Route::get('/items/{id}', [ItemController::class, 'show'])->name('items.show');
     Route::put('/items/{id}', [ItemController::class, 'update'])->name('items.update');
@@ -56,24 +52,33 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:master'])->group(function () {
         Route::get('/parameters', [ParametersController::class, 'index'])->name('parameters');
         Route::post('/parameters/grupos', [ParametersController::class, 'storeGrupo'])->name('parameters.grupos.store');
+        Route::put('/parameters/grupos/{id}', [ParametersController::class, 'updateGrupo'])->name('parameters.grupos.update');
         Route::delete('/parameters/grupos/{id}', [ParametersController::class, 'destroyGrupo'])->name('parameters.grupos.destroy');
+        Route::post('/parameters/subgrupos', [ParametersController::class, 'storeSubgrupo'])->name('parameters.subgrupos.store');
+        Route::put('/parameters/subgrupos/{id}', [ParametersController::class, 'updateSubgrupo'])->name('parameters.subgrupos.update');
+        Route::delete('/parameters/subgrupos/{id}', [ParametersController::class, 'destroySubgrupo'])->name('parameters.subgrupos.destroy');
         Route::post('/parameters/origem', [ParametersController::class, 'storeOrigem'])->name('parameters.origem.store');
+        Route::put('/parameters/origem/{id}', [ParametersController::class, 'updateOrigem'])->name('parameters.origem.update');
         Route::delete('/parameters/origem/{id}', [ParametersController::class, 'destroyOrigem'])->name('parameters.origem.destroy');
         Route::post('/parameters/tipo', [ParametersController::class, 'storeTipo'])->name('parameters.tipo.store');
+        Route::put('/parameters/tipo/{id}', [ParametersController::class, 'updateTipo'])->name('parameters.tipo.update');
         Route::delete('/parameters/tipo/{id}', [ParametersController::class, 'destroyTipo'])->name('parameters.tipo.destroy');
         Route::post('/parameters/doctotipo', [ParametersController::class, 'storeDoctoTipo'])->name('parameters.doctotipo.store');
+        Route::put('/parameters/doctotipo/{id}', [ParametersController::class, 'updateDoctoTipo'])->name('parameters.doctotipo.update');
         Route::delete('/parameters/doctotipo/{id}', [ParametersController::class, 'destroyDoctoTipo'])->name('parameters.doctotipo.destroy');
         Route::post('/parameters/periodo', [ParametersController::class, 'storePeriodo'])->name('parameters.periodo.store');
+        Route::put('/parameters/periodo/{id}', [ParametersController::class, 'updatePeriodo'])->name('parameters.periodo.update');
         Route::delete('/parameters/periodo/{id}', [ParametersController::class, 'destroyPeriodo'])->name('parameters.periodo.destroy');
         Route::post('/parameters/profissional', [ParametersController::class, 'storeProfissional'])->name('parameters.profissional.store');
+        Route::put('/parameters/profissional/{id}', [ParametersController::class, 'updateProfissional'])->name('parameters.profissional.update');
         Route::delete('/parameters/profissional/{id}', [ParametersController::class, 'destroyProfissional'])->name('parameters.profissional.destroy');
     });
 
+    // Empreendimentos - managed through Parameters page
     Route::middleware(['role:master,sindico'])->group(function () {
-        Route::get('/empreendimentos', [EmpreendimentoController::class, 'index'])->name('empreendimentos.index');
         Route::post('/empreendimentos', [EmpreendimentoController::class, 'store'])->name('empreendimentos.store');
-        Route::get('/empreendimentos/{id}', [EmpreendimentoController::class, 'show'])->name('empreendimentos.show');
         Route::put('/empreendimentos/{id}', [EmpreendimentoController::class, 'update'])->name('empreendimentos.update');
+        Route::delete('/empreendimentos/{id}', [EmpreendimentoController::class, 'destroy'])->name('empreendimentos.destroy');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

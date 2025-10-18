@@ -32,6 +32,7 @@ import {
     Edit,
     Trash2,
 } from "lucide-react";
+import { formatDate } from "@/utils/dateFormat";
 
 const Activities = ({ auth, atividades, filters }) => {
     const { isDark, colors } = useTheme();
@@ -66,10 +67,17 @@ const Activities = ({ auth, atividades, filters }) => {
     const handleStartActivity = (activity) => {
         router.post(route('registros.store'), {
             atividade_id: activity.id,
-            atividaderegistro_dtinicio: new Date().toISOString().split('T')[0],
+            atividaderegistro_dtinicio: new Date().toISOString().slice(0, 10),
             atividaderegistro_observacoes: '',
         }, {
             preserveScroll: true,
+            onSuccess: () => {
+                console.log('Activity started successfully');
+            },
+            onError: (errors) => {
+                console.error('Error starting activity:', errors);
+                alert('Failed to start activity: ' + JSON.stringify(errors));
+            }
         });
     };
 
@@ -454,7 +462,8 @@ const Activities = ({ auth, atividades, filters }) => {
                         {filteredActivities.map((activity) => (
                             <div
                                 key={activity.id}
-                                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
+                                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all hover:bg-white dark:hover:bg-slate-700 hover:shadow-md cursor-pointer"
+                                onClick={() => router.visit(`/activities/${activity.id}`)}
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     {/* Left: Title & Info */}
@@ -477,7 +486,7 @@ const Activities = ({ auth, atividades, filters }) => {
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <Calendar className="w-3 h-3 text-gray-400" />
-                                                <span>{activity.dueDate}</span>
+                                                <span>{formatDate(activity.dueDate)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -499,7 +508,7 @@ const Activities = ({ auth, atividades, filters }) => {
                                         </div>
 
                                         {/* Action Tier */}
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                             {renderActionButtons(activity)}
                                         </div>
                                     </div>

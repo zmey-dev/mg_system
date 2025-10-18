@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DoctoTipo;
+use App\Models\Empreendimento;
 use App\Models\Item;
 use App\Models\ItemGrupo;
+use App\Models\Origem;
+use App\Models\Periodo;
+use App\Models\Profissional;
+use App\Models\Tipo;
 use App\Models\Torre;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,17 +22,30 @@ class CatalogoController extends Controller
         $user = $request->user();
         $empreendimentoId = $user->empreendimento_id;
 
-        $torres = Torre::where('empreendimento_id', $empreendimentoId)
-            ->with(['ambientes.items.subgrupo.grupo'])
-            ->get();
+        // Master can see all empreendimentos, others see only their own
+        if ($user->role === 'master') {
+            $empreendimentos = Empreendimento::all();
+            $torres = Torre::with(['ambientes.items.subgrupo.grupo'])->get();
+        } else {
+            $empreendimentos = Empreendimento::where('empreendimento_id', $empreendimentoId)->get();
+            $torres = Torre::where('empreendimento_id', $empreendimentoId)
+                ->with(['ambientes.items.subgrupo.grupo'])
+                ->get();
+        }
 
         $grupos = ItemGrupo::where('itemgrupo_bloqueado', false)
-            ->with('subgrupos')
+            ->with(['subgrupos.items.ambiente.torre'])
             ->get();
 
         return Inertia::render('Catalog', [
             'torres' => $torres,
             'grupos' => $grupos,
+            'empreendimentos' => $empreendimentos,
+            'origens' => Origem::all(),
+            'tipos' => Tipo::all(),
+            'doctoTipos' => DoctoTipo::all(),
+            'periodos' => Periodo::all(),
+            'profissionais' => Profissional::all(),
         ]);
     }
 

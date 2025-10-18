@@ -16,15 +16,20 @@ class AtividadeRegistroController extends Controller
         $user = $request->user();
         $empreendimentoId = $user->empreendimento_id;
 
-        $registros = AtividadeRegistro::with([
+        $query = AtividadeRegistro::with([
             'atividade.item.ambiente.torre',
             'usuario',
             'attachments'
-        ])
-            ->whereHas('atividade.item.ambiente.torre', function ($q) use ($empreendimentoId) {
+        ]);
+
+        // Master can see all registros, others see only their empreendimento
+        if ($user->role !== 'master') {
+            $query->whereHas('atividade.item.ambiente.torre', function ($q) use ($empreendimentoId) {
                 $q->where('empreendimento_id', $empreendimentoId);
-            })
-            ->orderBy('atividaderegistro_dtinicio', 'desc')
+            });
+        }
+
+        $registros = $query->orderBy('atividaderegistro_dtinicio', 'desc')
             ->paginate(20);
 
         return Inertia::render('Registros', [
@@ -48,7 +53,7 @@ class AtividadeRegistroController extends Controller
         $atividade = Atividade::find($validated['atividade_id']);
         $atividade->update(['atividade_status' => 'ativa']);
 
-        return redirect()->route('registros.index')->with('success', 'Registro started successfully.');
+        return redirect()->back()->with('success', 'Registro started successfully.');
     }
 
     public function show(Request $request, $id)

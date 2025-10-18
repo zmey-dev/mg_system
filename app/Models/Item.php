@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Item extends Model
 {
@@ -23,6 +25,8 @@ class Item extends Model
         'item_status',
     ];
 
+    protected $appends = ['item_imagem_url'];
+
     public function ambiente(): BelongsTo
     {
         return $this->belongsTo(Ambiente::class, 'ambiente_id', 'ambiente_id');
@@ -36,5 +40,14 @@ class Item extends Model
     public function atividades(): HasMany
     {
         return $this->hasMany(Atividade::class, 'item_id', 'item_id');
+    }
+
+    public function getItemImagemUrlAttribute(): ?string
+    {
+        if (!$this->item_imagem) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->item_imagem);
     }
 }

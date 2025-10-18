@@ -2,6 +2,7 @@ import { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, router } from '@inertiajs/react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { formatDate } from '@/utils/dateFormat';
 import {
     Building2,
     Clock,
@@ -29,15 +30,31 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
         overdue: stats?.atrasadas || 0
     };
 
-    const recentActivities = recentes?.map(atividade => ({
+    const allActivities = recentes?.map(atividade => ({
         id: atividade.atividade_id,
         title: atividade.atividade_descricao,
         priority: atividade.atividade_prioridade,
         status: atividade.atividade_status === 'ativa' ? 'scheduled' : 'completed',
         technician: atividade.profissional?.profissional_tipo || 'N/A',
         dueDate: atividade.atividade_dtestimada,
-        location: `${atividade.item?.ambiente?.torre?.torre_nome || ''} - ${atividade.item?.ambiente?.ambiente_nome || ''}`
+        location: `${atividade.item?.ambiente?.torre?.torre_nome || ''} - ${atividade.item?.ambiente?.ambiente_nome || ''}`,
+        torreId: atividade.item?.ambiente?.torre?.torre_id
     })) || [];
+
+    // Filter activities based on selected filters
+    const recentActivities = allActivities.filter(activity => {
+        // Priority filter
+        const priorityMatch = selectedFilter === 'all' ||
+            (selectedFilter === 'high' && activity.priority === 'alta') ||
+            (selectedFilter === 'medium' && activity.priority === 'media') ||
+            (selectedFilter === 'low' && activity.priority === 'baixa');
+
+        // Building filter
+        const buildingMatch = selectedBuilding === 'all' ||
+            activity.torreId?.toString() === selectedBuilding;
+
+        return priorityMatch && buildingMatch;
+    });
 
     const getPriorityColor = (priority) => {
         switch (priority) {
@@ -272,7 +289,7 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
                                                     </span>
                                                     <span className="flex items-center">
                                                         <Calendar className="w-3.5 h-3.5 mr-1" />
-                                                        {activity.dueDate}
+                                                        {formatDate(activity.dueDate)}
                                                     </span>
                                                 </div>
                                             </div>

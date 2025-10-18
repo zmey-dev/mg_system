@@ -33,6 +33,11 @@ class EmpreendimentoController extends Controller
 
         Empreendimento::create($validated);
 
+        // Redirect back to where the request came from (Parameters or Empreendimentos page)
+        if ($request->header('referer') && str_contains($request->header('referer'), '/parameters')) {
+            return redirect()->route('parameters')->with('success', 'Empreendimento created successfully.');
+        }
+
         return redirect()->route('empreendimentos.index')->with('success', 'Condominium created successfully.');
     }
 
@@ -49,11 +54,36 @@ class EmpreendimentoController extends Controller
 
         $validated = $request->validate([
             'empreendimento_nome' => 'sometimes|string|max:255',
+            'empreendimento_cnpj' => 'sometimes|string|max:20',
+            'empreendimento_endereco' => 'sometimes|string|max:255',
+            'empreendimento_numero' => 'sometimes|string|max:10',
+            'empreendimento_cep' => 'sometimes|string|max:10',
+            'empreendimento_cidade' => 'sometimes|string|max:100',
+            'empreendimento_uf' => 'sometimes|string|size:2',
+            'empreendimento_qtdtorre' => 'nullable|integer',
             'empreendimento_status' => 'sometimes|in:ativo,bloqueado',
         ]);
 
         $empreendimento->update($validated);
 
+        // Redirect back to where the request came from (Parameters or Empreendimentos page)
+        if ($request->header('referer') && str_contains($request->header('referer'), '/parameters')) {
+            return redirect()->route('parameters')->with('success', 'Empreendimento updated successfully.');
+        }
+
         return redirect()->route('empreendimentos.index')->with('success', 'Condominium updated successfully.');
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $empreendimento = Empreendimento::findOrFail($id);
+        $empreendimento->delete();
+
+        // Redirect back to where the request came from (Parameters or Empreendimentos page)
+        if ($request->header('referer') && str_contains($request->header('referer'), '/parameters')) {
+            return redirect()->route('parameters')->with('success', 'Empreendimento deleted successfully.');
+        }
+
+        return redirect()->route('empreendimentos.index')->with('success', 'Condominium deleted successfully.');
     }
 }

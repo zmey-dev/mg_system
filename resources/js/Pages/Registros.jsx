@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import MainLayout from "@/Layouts/MainLayout";
 import { router } from "@inertiajs/react";
 import { Play, CheckCircle, Clock, FileText, User, Calendar, Search } from "lucide-react";
+import { formatDate } from "@/utils/dateFormat";
 
 const Registros = ({ auth, registros }) => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -31,10 +32,6 @@ const Registros = ({ auth, registros }) => {
         }
     };
 
-    const formatDate = (date) => {
-        if (!date) return "-";
-        return new Date(date).toLocaleDateString('pt-BR');
-    };
 
     const filteredRegistros = registros.data?.filter(registro => {
         const matchesSearch =

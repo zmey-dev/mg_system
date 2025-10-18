@@ -98,7 +98,9 @@ class AtividadeController extends Controller
             'registros.attachments'
         ])->findOrFail($id);
 
-        return response()->json($atividade);
+        return Inertia::render('ActivityDetail', [
+            'atividade' => $atividade,
+        ]);
     }
 
     public function update(Request $request, $id)

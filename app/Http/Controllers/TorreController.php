@@ -45,7 +45,7 @@ class TorreController extends Controller
 
         Torre::create($validated);
 
-        return redirect()->route('torres.index')->with('success', 'Torre criada com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Torre criada com sucesso.');
     }
 
     public function show($id)
@@ -61,12 +61,12 @@ class TorreController extends Controller
 
         $validated = $request->validate([
             'torre_nome' => 'sometimes|string|max:100',
-            'torre_qtdaptos' => 'sometimes|integer|min:1',
+            'torre_qtdaptos' => 'nullable|integer|min:1',
         ]);
 
         $torre->update($validated);
 
-        return redirect()->route('torres.index')->with('success', 'Torre atualizada com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Torre atualizada com sucesso.');
     }
 
     public function destroy($id)
@@ -74,6 +74,6 @@ class TorreController extends Controller
         $torre = Torre::findOrFail($id);
         $torre->delete();
 
-        return redirect()->route('torres.index')->with('success', 'Torre excluída com sucesso.');
+        return redirect()->route('catalog')->with('success', 'Torre excluída com sucesso.');
     }
 }
