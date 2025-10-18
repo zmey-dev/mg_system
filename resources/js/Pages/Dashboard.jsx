@@ -105,20 +105,20 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
         <MainLayout auth={auth}>
             <Head title="Painel - Gestão de Edifícios" />
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
                 {/* Page Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className={`text-3xl font-semibold ${colors.text.primary}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                    <div className="flex-1 min-w-0">
+                        <h1 className={`text-xl sm:text-2xl md:text-3xl font-semibold ${colors.text.primary}`}>
                             Painel de Manutenção de Edifícios
                         </h1>
-                        <p className={`${colors.text.secondary} mt-1`}>
+                        <p className={`${colors.text.secondary} mt-1 text-xs sm:text-sm md:text-base`}>
                             Visão geral da gestão de instalações em tempo real
                         </p>
                     </div>
                     <button
                         onClick={() => router.visit('/activities')}
-                        className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors shadow-sm"
+                        className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm whitespace-nowrap text-sm sm:text-base w-full sm:w-auto"
                     >
                         <Plus className="w-4 h-4" />
                         <span>Nova Tarefa</span>
@@ -127,80 +127,78 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
 
 
                     {/* Status Cards - Minimal Style (like Activities page) */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
 
                         {/* Overdue */}
-                        <div className={`${colors.card} border ${colors.border} rounded-lg p-4`}>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Atrasadas</p>
-                                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{statusCounts.overdue}</p>
+                        <div className={`${colors.card} border ${colors.border} rounded-lg p-3 sm:p-4`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div className="flex-1">
+                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">Atrasadas</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">{statusCounts.overdue}</p>
                                 </div>
-                                <div className="w-12 h-12 bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center">
-                                    <Clock className="w-6 h-6 text-red-600 dark:text-red-400" />
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
                                 </div>
                             </div>
                         </div>
 
                         {/* Today */}
-                        <div className={`${colors.card} border ${colors.border} rounded-lg p-4`}>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Hoje</p>
-                                    <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">{statusCounts.today}</p>
+                        <div className={`${colors.card} border ${colors.border} rounded-lg p-3 sm:p-4`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div className="flex-1">
+                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">Hoje</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-teal-600 dark:text-teal-400">{statusCounts.today}</p>
                                 </div>
-                                <div className="w-12 h-12 bg-teal-50 dark:bg-teal-950/30 rounded-full flex items-center justify-center">
-                                    <Calendar className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-950/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />
                                 </div>
                             </div>
                         </div>
 
                         {/* This Week */}
-                        <div className={`${colors.card} border ${colors.border} rounded-lg p-4`}>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Esta Semana</p>
-                                    <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.thisWeek}</p>
+                        <div className={`${colors.card} border ${colors.border} rounded-lg p-3 sm:p-4`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div className="flex-1">
+                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">Esta Semana</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.thisWeek}</p>
                                 </div>
-                                <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center">
-                                    <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400" />
                                 </div>
                             </div>
                         </div>
 
                         {/* Upcoming */}
-                        <div className={`${colors.card} border ${colors.border} rounded-lg p-4`}>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Próximas</p>
-                                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{statusCounts.upcoming}</p>
+                        <div className={`${colors.card} border ${colors.border} rounded-lg p-3 sm:p-4`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div className="flex-1">
+                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">Próximas</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">{statusCounts.upcoming}</p>
                                 </div>
-                                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center">
-                                    <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Filters and Search - Minimal */}
-                    <div className={`${colors.card} rounded-lg border ${colors.border} p-4`}>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div className="flex items-center gap-2">
-                                <div className="relative">
-                                    <Search className={`w-4 h-4 absolute left-2.5 top-1/2 transform -translate-y-1/2 ${colors.text.secondary}`} />
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar tarefas..."
-                                        className={`pl-8 pr-3 py-1.5 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent w-64 ${colors.surface} ${colors.text.primary} placeholder-gray-400`}
-                                    />
-                                </div>
+                    <div className={`${colors.card} rounded-lg border ${colors.border} p-3 sm:p-4`}>
+                        <div className="flex flex-col gap-2 sm:gap-3">
+                            <div className="relative w-full">
+                                <Search className={`w-4 h-4 absolute left-2.5 top-1/2 transform -translate-y-1/2 ${colors.text.secondary}`} />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar tarefas..."
+                                    className={`pl-8 pr-3 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent w-full ${colors.surface} ${colors.text.primary} placeholder-gray-400`}
+                                />
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                 <select
                                     value={selectedBuilding}
                                     onChange={(e) => setSelectedBuilding(e.target.value)}
-                                    className={`px-2.5 py-1.5 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary}`}
+                                    className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
                                 >
                                     <option value="all">Todas as Torres</option>
                                     {torres?.map(torre => (
@@ -213,7 +211,7 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
                                 <select
                                     value={selectedFilter}
                                     onChange={(e) => setSelectedFilter(e.target.value)}
-                                    className={`px-2.5 py-1.5 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary}`}
+                                    className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
                                 >
                                     <option value="all">Todas as Prioridades</option>
                                     <option value="high">Alta</option>
@@ -221,10 +219,10 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
                                     <option value="low">Baixa</option>
                                 </select>
 
-                                <div className="relative">
+                                <div className="relative w-full sm:w-auto">
                                     <button
                                         onClick={() => setShowMoreFilters(!showMoreFilters)}
-                                        className={`px-2.5 py-1.5 text-sm border ${colors.border} rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center`}
+                                        className={`px-3 py-2 text-sm border ${colors.border} rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center w-full sm:w-auto justify-center`}
                                     >
                                         <Filter className="w-3.5 h-3.5 mr-1.5" />
                                         <span className="text-xs">Mais</span>
@@ -250,15 +248,16 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
 
                     {/* Recent Activities */}
                     <div className={`${colors.card} rounded-lg border ${colors.border}`}>
-                        <div className={`p-5 border-b ${colors.border}`}>
-                            <div className="flex items-center justify-between">
-                                <h3 className={`text-lg font-semibold ${colors.text.primary} flex items-center`}>
-                                    <FileText className={`w-5 h-5 mr-2 ${colors.text.muted}`} />
-                                    Atividades de Manutenção Recentes
+                        <div className={`p-4 sm:p-5 border-b ${colors.border}`}>
+                            <div className="flex items-center justify-between gap-2">
+                                <h3 className={`text-base sm:text-lg font-semibold ${colors.text.primary} flex items-center`}>
+                                    <FileText className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 ${colors.text.muted}`} />
+                                    <span className="hidden sm:inline">Atividades de Manutenção Recentes</span>
+                                    <span className="sm:hidden">Atividades Recentes</span>
                                 </h3>
                                 <button
                                     onClick={() => router.visit('/activities')}
-                                    className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-sm font-medium"
+                                    className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-xs sm:text-sm font-medium whitespace-nowrap"
                                 >
                                     Ver Todas
                                 </button>
@@ -267,35 +266,35 @@ export default function Dashboard({ auth, stats, recentes, torres }) {
 
                         <div className="space-y-1 p-1.5">
                             {recentActivities.map((activity) => (
-                                <div key={activity.id} className={`p-4 ${colors.card} hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors rounded-md`}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getPriorityIconBg(activity.priority)}`}>
+                                <div key={activity.id} className={`p-3 sm:p-4 ${colors.card} hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors rounded-md`}>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${getPriorityIconBg(activity.priority)}`}>
                                                 <div className={getPriorityIconColor(activity.priority)}>
                                                     {getStatusIcon(activity.status)}
                                                 </div>
                                             </div>
 
-                                            <div>
-                                                <h4 className={`font-medium text-[15px] ${colors.text.primary}`}>{activity.title}</h4>
-                                                <div className={`flex items-center gap-3 mt-1.5 text-[13px] ${colors.text.secondary}`}>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className={`font-medium text-sm sm:text-[15px] ${colors.text.primary} truncate`}>{activity.title}</h4>
+                                                <div className={`flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 mt-1 sm:mt-1.5 text-xs sm:text-[13px] ${colors.text.secondary}`}>
                                                     <span className="flex items-center">
-                                                        <Users className="w-3.5 h-3.5 mr-1" />
-                                                        {activity.technician}
+                                                        <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 flex-shrink-0" />
+                                                        <span className="truncate">{activity.technician}</span>
+                                                    </span>
+                                                    <span className="flex items-center min-w-0">
+                                                        <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 flex-shrink-0" />
+                                                        <span className="truncate">{activity.location}</span>
                                                     </span>
                                                     <span className="flex items-center">
-                                                        <Building2 className="w-3.5 h-3.5 mr-1" />
-                                                        {activity.location}
-                                                    </span>
-                                                    <span className="flex items-center">
-                                                        <Calendar className="w-3.5 h-3.5 mr-1" />
+                                                        <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 flex-shrink-0" />
                                                         {formatDate(activity.dueDate)}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-shrink-0">
                                             <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${getPriorityColor(activity.priority)}`}>
                                                 {activity.priority.toUpperCase()}
                                             </span>

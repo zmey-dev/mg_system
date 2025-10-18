@@ -743,26 +743,26 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
         <MainLayout auth={auth}>
             <Head title="Catálogo de Ativos - Gestão de Edifícios" />
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
                 {/* Page Header */}
-                <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className={`text-3xl font-semibold ${colors.text.primary}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                            <h1 className={`text-2xl sm:text-3xl font-semibold ${colors.text.primary}`}>
                                 Catálogo de Ativos
                             </h1>
-                            <p className={`${colors.text.secondary} mt-1`}>
+                            <p className={`${colors.text.secondary} mt-1 text-sm sm:text-base`}>
                                 Gerencie a infraestrutura e hierarquia de equipamentos do edifício
                             </p>
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                             <Button
                                 onClick={handleAdd}
-                                className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-sm"
+                                className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-sm flex-1 sm:flex-initial"
                             >
-                                <Plus className="w-4 h-4 mr-2" />
-                                Adicionar
+                                <Plus className="w-4 h-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Adicionar</span>
                             </Button>
-                            <div className="relative">
+                            <div className="relative hidden sm:block">
                                 <button
                                     onClick={() => setShowFilterMenu(!showFilterMenu)}
                                     className={`${colors.card} border ${colors.border} ${colors.surfaceHover} ${colors.text.secondary} px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors group`}
@@ -805,10 +805,25 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                             </div>
                         </div>
                     </div>
+                    {/* Mobile Category Dropdown - Visible only on mobile */}
+                    <div className="lg:hidden mb-4">
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className={`w-full px-4 py-3 border ${colors.border} rounded-lg focus:ring-2 focus:ring-blue-500 ${colors.card} ${colors.text.primary} text-base`}
+                        >
+                            {categories.map((category) => (
+                                <option key={category.id} value={category.id}>
+                                    {category.name} ({category.count})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                        {/* Categories Sidebar */}
-                        <div className="lg:col-span-3">
+                        {/* Categories Sidebar - Hidden on mobile, shown on desktop */}
+                        <div className="hidden lg:block lg:col-span-3">
                             <div className={`${colors.card} rounded-xl shadow-sm border ${colors.border} p-6`}>
                                 <h3 className={`text-lg font-semibold ${colors.text.primary} mb-4 flex items-center`}>
                                     <FolderTree className={`w-5 h-5 mr-2.5 ${colors.text.secondary}`} />
@@ -865,25 +880,20 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                         </div>
 
                         {/* Main Content */}
-                        <div className="lg:col-span-9">
+                        <div className="col-span-1 lg:col-span-9">
                             <div className={`${colors.card} rounded-xl shadow-sm border ${colors.border}`}>
 
                                 {/* Search and View Controls */}
-                                <div className={`p-6 border-b ${colors.border}`}>
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="relative flex-1 min-w-64">
-                                                <Search className={`w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 ${colors.text.secondary}`} />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Buscar ativos por nome, código ou descrição..."
-                                                    value={searchTerm}
-                                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                                    className={`pl-10 pr-4 py-2 border ${colors.border} rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent w-full ${colors.surface} ${colors.text.primary} placeholder-gray-500`}
-                                                />
-                                            </div>
-                                        </div>
-
+                                <div className={`p-4 sm:p-6 border-b ${colors.border}`}>
+                                    <div className="relative w-full">
+                                        <Search className={`w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 ${colors.text.secondary}`} />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar ativos..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className={`pl-10 pr-4 py-2 border ${colors.border} rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent w-full ${colors.surface} ${colors.text.primary} placeholder-gray-500 text-sm sm:text-base`}
+                                        />
                                     </div>
                                 </div>
 

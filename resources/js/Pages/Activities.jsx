@@ -326,92 +326,94 @@ const Activities = ({ auth, atividades, filters }) => {
 
     return (
         <MainLayout auth={auth}>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:gap-4">
                     <div>
                         <h1
-                            className={`text-3xl font-semibold ${colors.text.primary}`}
+                            className={`text-2xl sm:text-3xl font-semibold ${colors.text.primary}`}
                         >
                             Atividades
                         </h1>
-                        <p className={`${colors.text.secondary} mt-1`}>
+                        <p className={`${colors.text.secondary} mt-1 text-sm sm:text-base`}>
                             Acompanhe e execute as atividades de manutenção
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                         <Button
                             variant="outline"
                             onClick={() => router.visit('/registros')}
-                            className={`border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400`}
+                            className={`border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 text-sm sm:text-base w-full sm:w-auto justify-center`}
                         >
-                            Ver Histórico de Execuções
+                            <span className="hidden sm:inline">Ver Histórico de Execuções</span>
+                            <span className="sm:hidden">Ver Histórico</span>
                         </Button>
                         {auth.user && (
                             <Button
                                 onClick={() => setShowNewActivityModal(true)}
-                                className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-sm"
+                                className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-sm w-full sm:w-auto justify-center"
                             >
-                                <Plus className="w-4 h-4 mr-2" />
-                                Nova Atividade
+                                <Plus className="w-4 h-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Nova Atividade</span>
+                                <span className="sm:hidden ml-2">Nova Atividade</span>
                             </Button>
                         )}
                     </div>
                 </div>
 
                 {/* Status Cards - Minimal */}
-                <div className="grid grid-cols-3 gap-3 mb-12">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-8 sm:mb-12">
                     <div
-                        className={`${colors.card} border ${colors.border} rounded-lg p-3`}
+                        className={`${colors.card} border ${colors.border} rounded-lg p-2 sm:p-3`}
                     >
-                        <div className="flex items-center justify-between">
-                            <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="flex-1">
                                 <p className="text-xs text-gray-500 mb-1">
                                     Ativa
                                 </p>
-                                <p className="text-xl font-semibold text-blue-600">
+                                <p className="text-lg sm:text-xl font-semibold text-blue-600">
                                     {stats.ativa}
                                 </p>
                             </div>
-                            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center">
-                                <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
                             </div>
                         </div>
                     </div>
 
                     <div
-                        className={`${colors.card} border ${colors.border} rounded-lg p-3`}
+                        className={`${colors.card} border ${colors.border} rounded-lg p-2 sm:p-3`}
                     >
-                        <div className="flex items-center justify-between">
-                            <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="flex-1">
                                 <p className="text-xs text-gray-500 mb-1">
                                     Bloqueada
                                 </p>
-                                <p className="text-xl font-semibold text-orange-600">
+                                <p className="text-lg sm:text-xl font-semibold text-orange-600">
                                     {stats.bloqueada}
                                 </p>
                             </div>
-                            <div className="w-10 h-10 bg-orange-50 dark:bg-orange-950/30 rounded-full flex items-center justify-center">
-                                <Pause className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-50 dark:bg-orange-950/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Pause className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
                             </div>
                         </div>
                     </div>
 
                     <div
-                        className={`${colors.card} border ${colors.border} rounded-lg p-3`}
+                        className={`${colors.card} border ${colors.border} rounded-lg p-2 sm:p-3`}
                     >
-                        <div className="flex items-center justify-between">
-                            <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="flex-1">
                                 <p className="text-xs text-gray-500 mb-1">
                                     Concluída
                                 </p>
-                                <p className="text-xl font-semibold text-emerald-600">
+                                <p className="text-lg sm:text-xl font-semibold text-emerald-600">
                                     {stats.concluida}
                                 </p>
                             </div>
-                            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center">
-                                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                         </div>
                     </div>
@@ -419,7 +421,7 @@ const Activities = ({ auth, atividades, filters }) => {
 
                 {/* Activities List - Compact Card Layout */}
                 <div>
-                    <div className="flex items-center justify-between mt-8 mb-2.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mt-6 sm:mt-8 mb-2.5">
                         <h2
                             className={`text-base font-medium ${colors.text.primary}`}
                         >
@@ -432,67 +434,53 @@ const Activities = ({ auth, atividades, filters }) => {
                         </h2>
 
                         {/* Filter - Right Aligned */}
-                        <Select
+                        <select
                             value={statusFilter}
-                            onValueChange={setStatusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className={`w-full sm:w-36 border ${colors.border} ${colors.surface} ${colors.text.primary} h-9 sm:h-8 text-sm sm:text-xs px-3 rounded-md`}
                         >
-                            <SelectTrigger
-                                className={`w-36 border ${colors.border} ${colors.surface} ${colors.text.primary} h-8 text-xs`}
-                            >
-                                <SelectValue placeholder="Filtrar por status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">
-                                    Todos os Status
-                                </SelectItem>
-                                <SelectItem value="ativa">
-                                    Ativa
-                                </SelectItem>
-                                <SelectItem value="bloqueada">
-                                    Bloqueada
-                                </SelectItem>
-                                <SelectItem value="concluida">
-                                    Concluída
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
+                            <option value="all">Todos os Status</option>
+                            <option value="ativa">Ativa</option>
+                            <option value="bloqueada">Bloqueada</option>
+                            <option value="concluida">Concluída</option>
+                        </select>
                     </div>
 
                     <div className="space-y-2">
                         {filteredActivities.map((activity) => (
                             <div
                                 key={activity.id}
-                                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all hover:bg-white dark:hover:bg-slate-700 hover:shadow-md cursor-pointer"
+                                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 transition-all hover:bg-white dark:hover:bg-slate-700 hover:shadow-md cursor-pointer"
                                 onClick={() => router.visit(`/activities/${activity.id}`)}
                             >
-                                <div className="flex items-start justify-between gap-4">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                                     {/* Left: Title & Info */}
                                     <div className="flex-1 min-w-0">
                                         <h3
-                                            className={`text-[15px] font-semibold ${colors.text.primary} mb-1.5`}
+                                            className={`text-sm sm:text-[15px] font-semibold ${colors.text.primary} mb-1.5`}
                                         >
                                             {activity.name}
                                         </h3>
-                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
-                                            <div className="flex items-center gap-1.5">
+                                        <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                                            <div className="flex items-center gap-1 sm:gap-1.5">
                                                 <span className="text-xs">
                                                     📍
                                                 </span>
-                                                <span>{activity.asset}</span>
+                                                <span className="truncate max-w-[150px] sm:max-w-none">{activity.asset}</span>
                                             </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <User className="w-3 h-3 text-gray-400" />
+                                            <div className="flex items-center gap-1 sm:gap-1.5">
+                                                <User className="w-3 h-3 text-gray-400 flex-shrink-0" />
                                                 <span>{activity.assignee}</span>
                                             </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <Calendar className="w-3 h-3 text-gray-400" />
+                                            <div className="flex items-center gap-1 sm:gap-1.5">
+                                                <Calendar className="w-3 h-3 text-gray-400 flex-shrink-0" />
                                                 <span>{formatDate(activity.dueDate)}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Right: Status & Actions */}
-                                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 flex-shrink-0">
                                         {/* Status Tier - Dot + Text */}
                                         <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                                             <span

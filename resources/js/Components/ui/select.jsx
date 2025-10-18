@@ -52,7 +52,7 @@ const Select = ({ children, value, onValueChange, defaultValue }) => {
       getLabel,
       triggerRef
     }}>
-      <div className="relative">
+      <div className="relative min-w-0">
         {children}
       </div>
     </SelectContext.Provider>
@@ -71,7 +71,7 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
   return (
     <button
       type="button"
-      className={`flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className || ''}`}
+      className={`flex h-10 w-full min-w-0 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className || ''}`}
       ref={(node) => {
         triggerRef.current = node
         if (typeof ref === 'function') ref(node)
@@ -82,7 +82,7 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
     >
       {children}
       <svg
-        className={`h-4 w-4 opacity-50 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        className={`h-4 w-4 opacity-50 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="none"
@@ -103,7 +103,7 @@ const SelectValue = ({ placeholder }) => {
   const displayValue = getLabel(value)
 
   return (
-    <span className="pointer-events-none">
+    <span className="pointer-events-none truncate">
       {displayValue || placeholder}
     </span>
   )
@@ -140,7 +140,7 @@ const SelectContent = ({ className, children, ...props }) => {
         pointerEvents: isOpen ? 'auto' : 'none',
         opacity: isOpen ? 1 : 0
       }}
-      className={`absolute z-[100] mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md transition-opacity ${className || ''}`}
+      className={`absolute z-[100] mt-1 max-h-60 w-full min-w-0 max-w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md transition-opacity ${className || ''}`}
       {...props}
     >
       <div className="p-1">

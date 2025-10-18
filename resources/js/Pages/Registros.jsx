@@ -47,11 +47,11 @@ const Registros = ({ auth, registros }) => {
         <MainLayout auth={auth}>
             <div className="py-6">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Registros de Execução</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Registros de Execução</h1>
                 </div>
 
                 {/* Filters */}
-                <div className="mb-6 flex flex-col md:flex-row gap-4">
+                <div className="mb-6 flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
@@ -59,13 +59,13 @@ const Registros = ({ auth, registros }) => {
                             placeholder="Buscar registros..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base"
                         />
                     </div>
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base w-full sm:w-auto"
                     >
                         <option value="all">Todos os Status</option>
                         <option value="em_andamento">Em Andamento</option>
@@ -78,27 +78,27 @@ const Registros = ({ auth, registros }) => {
                     {filteredRegistros.map((registro) => (
                         <div
                             key={registro.atividaderegistro_id}
-                            className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow"
                         >
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex items-start gap-4 flex-1">
-                                    <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                                    <div className="p-2 sm:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg flex-shrink-0">
                                         {getStatusIcon(registro.status)}
                                     </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                                            <h3 className="font-semibold text-base sm:text-lg text-gray-900 dark:text-white break-words">
                                                 {registro.atividade?.atividade_descricao || "Sem descrição"}
                                             </h3>
                                             {getStatusBadge(registro.status)}
                                         </div>
-                                        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                                             <div className="flex items-center gap-1">
-                                                <FileText className="w-4 h-4" />
-                                                {registro.atividade?.item?.item_nome || "Item não especificado"}
+                                                <FileText className="w-4 h-4 flex-shrink-0" />
+                                                <span className="truncate">{registro.atividade?.item?.item_nome || "Item não especificado"}</span>
                                             </div>
                                             {registro.atividade?.item?.ambiente?.torre && (
-                                                <div className="text-gray-500 dark:text-gray-400">
+                                                <div className="text-gray-500 dark:text-gray-400 truncate">
                                                     {registro.atividade.item.ambiente.torre.torre_nome} - {registro.atividade.item.ambiente.ambiente_nome}
                                                 </div>
                                             )}
@@ -107,7 +107,7 @@ const Registros = ({ auth, registros }) => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
                                 <div className="flex items-start gap-2">
                                     <Calendar className="w-4 h-4 mt-1 text-gray-400" />
                                     <div>
@@ -178,9 +178,9 @@ const Registros = ({ auth, registros }) => {
 
                 {filteredRegistros.length === 0 && (
                     <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                        <Play className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                        <p className="text-lg font-medium mb-2">Nenhum registro encontrado</p>
-                        <p className="text-sm">
+                        <Play className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-50" />
+                        <p className="text-base sm:text-lg font-medium mb-2">Nenhum registro encontrado</p>
+                        <p className="text-xs sm:text-sm px-4">
                             {searchTerm || filterStatus !== "all"
                                 ? "Tente ajustar os filtros de busca"
                                 : "Execute atividades para criar registros"}
@@ -190,13 +190,13 @@ const Registros = ({ auth, registros }) => {
 
                 {/* Pagination */}
                 {registros.links && registros.links.length > 3 && (
-                    <div className="mt-6 flex justify-center gap-2">
+                    <div className="mt-6 flex flex-wrap justify-center gap-1 sm:gap-2">
                         {registros.links.map((link, index) => (
                             <button
                                 key={index}
                                 onClick={() => link.url && router.visit(link.url)}
                                 disabled={!link.url}
-                                className={`px-4 py-2 rounded ${
+                                className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm ${
                                     link.active
                                         ? 'bg-blue-600 text-white'
                                         : link.url
