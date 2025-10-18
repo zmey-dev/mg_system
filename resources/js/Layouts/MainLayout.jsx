@@ -14,7 +14,8 @@ import {
     ChevronDown,
     ClipboardList,
     Moon,
-    Sun
+    Sun,
+    Users
 } from 'lucide-react';
 
 const MainLayout = ({ children, auth }) => {
@@ -48,6 +49,13 @@ const MainLayout = ({ children, auth }) => {
             href: '/catalog',
             icon: Layers,
             current: url === '/catalog'
+        },
+        {
+            name: 'Usuários',
+            href: '/users',
+            icon: Users,
+            current: url.startsWith('/users'),
+            requiresRole: 'master'
         },
         {
             name: 'Parâmetros',

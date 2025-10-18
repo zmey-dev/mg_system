@@ -10,6 +10,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ParametersController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TorreController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -72,6 +73,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/parameters/profissional', [ParametersController::class, 'storeProfissional'])->name('parameters.profissional.store');
         Route::put('/parameters/profissional/{id}', [ParametersController::class, 'updateProfissional'])->name('parameters.profissional.update');
         Route::delete('/parameters/profissional/{id}', [ParametersController::class, 'destroyProfissional'])->name('parameters.profissional.destroy');
+
+        // User Management - Master only
+        Route::resource('users', UserController::class);
     });
 
     // Empreendimentos - managed through Parameters page
