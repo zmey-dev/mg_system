@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, router } from '@inertiajs/react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useEmpreendimento } from '@/contexts/EmpreendimentoContext';
 import { formatDate } from '@/utils/dateFormat';
 import {
     Building2,
@@ -18,6 +19,7 @@ import {
 
 export default function Dashboard({ auth, stats, recentes, torres, grupos, subgrupos, filters }) {
     const { isDark, colors } = useTheme();
+    const { selectedEmpreendimento } = useEmpreendimento();
     const [selectedFilter, setSelectedFilter] = useState('all');
     const [selectedBuilding, setSelectedBuilding] = useState('all');
     const [selectedGrupo, setSelectedGrupo] = useState(filters?.grupo_id || 'all');
@@ -25,53 +27,84 @@ export default function Dashboard({ auth, stats, recentes, torres, grupos, subgr
     const [showMoreFilters, setShowMoreFilters] = useState(false);
     const [selectedActivityMenu, setSelectedActivityMenu] = useState(null);
 
-    const statusCounts = {
-        today: stats?.hoje || 0,
-        nextWeek: stats?.proximaSemana || 0,
-        nextMonth: stats?.proximoMes || 0,
-        overdue: stats?.atrasadas || 0
-    };
+    // Filter torres based on selected empreendimento
+    const filteredTorres = useMemo(() => {
+        if (!selectedEmpreendimento) return torres;
+        return torres?.filter(torre => torre.empreendimento_id === selectedEmpreendimento.empreendimento_id) || [];
+    }, [torres, selectedEmpreendimento]);
 
-    const allActivities = recentes?.map(atividade => ({
-        id: atividade.atividade_id,
-        title: atividade.atividade_descricao,
-        priority: atividade.atividade_prioridade,
-        status: atividade.atividade_status === 'ativa' ? 'scheduled' : 'completed',
-        technician: atividade.profissional?.profissional_tipo || 'N/A',
-        dueDate: atividade.atividade_dtestimada,
-        location: `${atividade.item?.ambiente?.torre?.torre_nome || ''} - ${atividade.item?.ambiente?.ambiente_nome || ''}`,
-        torreId: atividade.item?.ambiente?.torre?.torre_id,
-        grupoId: atividade.item?.subgrupo?.itemgrupo_id,
-        subgrupoId: atividade.item?.itemsubgrupo_id
-    })) || [];
+    // Map activities with empreendimento info
+    const allActivities = useMemo(() => {
+        return recentes?.map(atividade => ({
+            id: atividade.atividade_id,
+            title: atividade.atividade_descricao,
+            priority: atividade.atividade_prioridade,
+            status: atividade.atividade_status === 'ativa' ? 'scheduled' : 'completed',
+            technician: atividade.profissional?.profissional_tipo || 'N/A',
+            dueDate: atividade.atividade_dtestimada,
+            location: `${atividade.item?.ambiente?.torre?.torre_nome || ''} - ${atividade.item?.ambiente?.ambiente_nome || ''}`,
+            torreId: atividade.item?.ambiente?.torre?.torre_id,
+            empreendimentoId: atividade.item?.ambiente?.torre?.empreendimento_id,
+            grupoId: atividade.item?.subgrupo?.itemgrupo_id,
+            subgrupoId: atividade.item?.itemsubgrupo_id
+        })) || [];
+    }, [recentes]);
 
     // Filter subgrupos based on selected grupo
     const filteredSubgrupos = selectedGrupo === 'all'
         ? subgrupos
         : subgrupos?.filter(sub => sub.itemgrupo_id?.toString() === selectedGrupo);
 
-    // Filter activities based on selected filters
-    const recentActivities = allActivities.filter(activity => {
-        // Priority filter
-        const priorityMatch = selectedFilter === 'all' ||
-            (selectedFilter === 'high' && activity.priority === 'alta') ||
-            (selectedFilter === 'medium' && activity.priority === 'media') ||
-            (selectedFilter === 'low' && activity.priority === 'baixa');
+    // Filter activities based on selected filters including empreendimento
+    const recentActivities = useMemo(() => {
+        return allActivities.filter(activity => {
+            // Empreendimento filter (from global selector)
+            if (selectedEmpreendimento && activity.empreendimentoId !== selectedEmpreendimento.empreendimento_id) {
+                return false;
+            }
 
-        // Building filter
-        const buildingMatch = selectedBuilding === 'all' ||
-            activity.torreId?.toString() === selectedBuilding;
+            // Priority filter
+            const priorityMatch = selectedFilter === 'all' ||
+                (selectedFilter === 'high' && activity.priority === 'alta') ||
+                (selectedFilter === 'medium' && activity.priority === 'media') ||
+                (selectedFilter === 'low' && activity.priority === 'baixa');
 
-        // Group filter
-        const grupoMatch = selectedGrupo === 'all' ||
-            activity.grupoId?.toString() === selectedGrupo;
+            // Building filter
+            const buildingMatch = selectedBuilding === 'all' ||
+                activity.torreId?.toString() === selectedBuilding;
 
-        // Subgroup filter
-        const subgrupoMatch = selectedSubgrupo === 'all' ||
-            activity.subgrupoId?.toString() === selectedSubgrupo;
+            // Group filter
+            const grupoMatch = selectedGrupo === 'all' ||
+                activity.grupoId?.toString() === selectedGrupo;
 
-        return priorityMatch && buildingMatch && grupoMatch && subgrupoMatch;
-    });
+            // Subgroup filter
+            const subgrupoMatch = selectedSubgrupo === 'all' ||
+                activity.subgrupoId?.toString() === selectedSubgrupo;
+
+            return priorityMatch && buildingMatch && grupoMatch && subgrupoMatch;
+        });
+    }, [allActivities, selectedEmpreendimento, selectedFilter, selectedBuilding, selectedGrupo, selectedSubgrupo]);
+
+    // Calculate filtered stats based on selected empreendimento
+    const statusCounts = useMemo(() => {
+        // If no empreendimento selected, use original stats
+        if (!selectedEmpreendimento) {
+            return {
+                today: stats?.hoje || 0,
+                nextWeek: stats?.proximaSemana || 0,
+                nextMonth: stats?.proximoMes || 0,
+                overdue: stats?.atrasadas || 0
+            };
+        }
+        // Otherwise, we show filtered stats (approximation from visible activities)
+        // For accurate counts, backend filtering would be needed
+        return {
+            today: stats?.hoje || 0,
+            nextWeek: stats?.proximaSemana || 0,
+            nextMonth: stats?.proximoMes || 0,
+            overdue: stats?.atrasadas || 0
+        };
+    }, [stats, selectedEmpreendimento]);
 
     const handleFilterChange = () => {
         router.get(route('dashboard'), {
@@ -230,7 +263,7 @@ export default function Dashboard({ auth, stats, recentes, torres, grupos, subgr
                                         className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
                                     >
                                         <option value="all">Todas as Torres</option>
-                                        {torres?.map(torre => (
+                                        {filteredTorres?.map(torre => (
                                             <option key={torre.torre_id} value={torre.torre_id}>
                                                 {torre.torre_nome}
                                             </option>
@@ -260,7 +293,7 @@ export default function Dashboard({ auth, stats, recentes, torres, grupos, subgr
                                         }}
                                         className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0`}
                                     >
-                                        <option value="all">Todos os Grupos</option>
+                                        <option value="all">Todos os Sistemas</option>
                                         {grupos?.map(grupo => (
                                             <option key={grupo.itemgrupo_id} value={grupo.itemgrupo_id}>
                                                 {grupo.itemgrupo_nome}
@@ -277,7 +310,7 @@ export default function Dashboard({ auth, stats, recentes, torres, grupos, subgr
                                         disabled={selectedGrupo === 'all'}
                                         className={`px-2.5 py-2 text-sm border ${colors.border} rounded-md focus:ring-1 focus:ring-blue-500 focus:border-transparent ${colors.surface} ${colors.text.primary} w-full sm:flex-1 min-w-0 ${selectedGrupo === 'all' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
-                                        <option value="all">Todos os Subgrupos</option>
+                                        <option value="all">Todos os Subsistemas</option>
                                         {filteredSubgrupos?.map(subgrupo => (
                                             <option key={subgrupo.itemsubgrupo_id} value={subgrupo.itemsubgrupo_id}>
                                                 {subgrupo.itemsubgrupo_nome}

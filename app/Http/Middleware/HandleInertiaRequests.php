@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Empreendimento;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -43,6 +44,9 @@ class HandleInertiaRequests extends Middleware
                     'updated_at' => $request->user()->updated_at,
                 ] : null,
             ],
+            'globalEmpreendimentos' => fn () => $request->user()
+                ? Empreendimento::select('empreendimento_id', 'empreendimento_nome')->orderBy('empreendimento_nome')->get()
+                : [],
         ];
     }
 }

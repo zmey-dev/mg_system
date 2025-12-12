@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useEmpreendimento } from '@/contexts/EmpreendimentoContext';
 import {
     Building,
     Home,
@@ -15,15 +16,19 @@ import {
     ClipboardList,
     Moon,
     Sun,
-    Users
+    Users,
+    MapPin,
+    Check
 } from 'lucide-react';
 
 const MainLayout = ({ children, auth }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [empreendimentoMenuOpen, setEmpreendimentoMenuOpen] = useState(false);
     const { url } = usePage();
     const { isDark, toggleTheme, colors } = useTheme();
+    const { selectedEmpreendimento, selectEmpreendimento, clearSelection, empreendimentos } = useEmpreendimento();
 
     const navigationItems = [
         {
@@ -220,18 +225,90 @@ const MainLayout = ({ children, auth }) => {
                             </div>
                         </div>
 
-                        {/* User info moved to the right */}
-                        {auth?.user && (
-                            <div className="hidden lg:flex items-center gap-3">
-                                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                    <User className="w-4 h-4 text-white" />
+                        {/* Empreendimento Selector + User info */}
+                        <div className="flex items-center gap-4">
+                            {/* Empreendimento Selector */}
+                            {auth?.user && empreendimentos.length > 0 && (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setEmpreendimentoMenuOpen(!empreendimentoMenuOpen)}
+                                        className={`flex items-center gap-2 px-3 py-2 text-sm border-2 ${
+                                            selectedEmpreendimento
+                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                                                : 'border-dashed border-gray-300 dark:border-gray-600'
+                                        } rounded-lg hover:border-blue-400 transition-colors ${colors.text.primary}`}
+                                    >
+                                        <MapPin className={`w-4 h-4 ${selectedEmpreendimento ? 'text-blue-600' : colors.text.muted}`} />
+                                        <span className="hidden sm:inline max-w-[200px] truncate">
+                                            {selectedEmpreendimento?.empreendimento_nome || 'Escolher Empreendimento'}
+                                        </span>
+                                        <ChevronDown className={`w-4 h-4 transition-transform ${empreendimentoMenuOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {empreendimentoMenuOpen && (
+                                        <>
+                                            <div
+                                                className="fixed inset-0 z-10"
+                                                onClick={() => setEmpreendimentoMenuOpen(false)}
+                                            />
+                                            <div className={`absolute right-0 top-full mt-2 w-72 ${colors.card} border ${colors.border} rounded-lg shadow-lg z-20 max-h-80 overflow-y-auto`}>
+                                                <div className="p-2">
+                                                    <div className={`px-3 py-2 text-xs font-semibold ${colors.text.muted} uppercase`}>
+                                                        Selecionar Empreendimento
+                                                    </div>
+                                                    {selectedEmpreendimento && (
+                                                        <button
+                                                            onClick={() => {
+                                                                clearSelection();
+                                                                setEmpreendimentoMenuOpen(false);
+                                                            }}
+                                                            className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg ${colors.surfaceHover} ${colors.text.secondary}`}
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                            <span>Mostrar Todos</span>
+                                                        </button>
+                                                    )}
+                                                    <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                                                    {empreendimentos.map((emp) => (
+                                                        <button
+                                                            key={emp.empreendimento_id}
+                                                            onClick={() => {
+                                                                selectEmpreendimento(emp);
+                                                                setEmpreendimentoMenuOpen(false);
+                                                            }}
+                                                            className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+                                                                selectedEmpreendimento?.empreendimento_id === emp.empreendimento_id
+                                                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                                                    : `${colors.surfaceHover} ${colors.text.primary}`
+                                                            }`}
+                                                        >
+                                                            <Building className="w-4 h-4 flex-shrink-0" />
+                                                            <span className="flex-1 text-left truncate">{emp.empreendimento_nome}</span>
+                                                            {selectedEmpreendimento?.empreendimento_id === emp.empreendimento_id && (
+                                                                <Check className="w-4 h-4 text-blue-600" />
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
-                                <div>
-                                    <div className={`text-sm font-medium ${colors.text.primary}`}>{auth.user.name}</div>
-                                    <div className={`text-xs ${colors.text.muted}`}>{auth.user.role || 'admin'}</div>
+                            )}
+
+                            {/* User info */}
+                            {auth?.user && (
+                                <div className="hidden lg:flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                        <User className="w-4 h-4 text-white" />
+                                    </div>
+                                    <div>
+                                        <div className={`text-sm font-medium ${colors.text.primary}`}>{auth.user.name}</div>
+                                        <div className={`text-xs ${colors.text.muted}`}>{auth.user.role || 'admin'}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
 

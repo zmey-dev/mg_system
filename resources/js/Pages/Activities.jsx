@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import MainLayout from "@/Layouts/MainLayout";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useEmpreendimento } from "@/contexts/EmpreendimentoContext";
 import { router } from "@inertiajs/react";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
@@ -36,6 +37,7 @@ import { formatDate } from "@/utils/dateFormat";
 
 const Activities = ({ auth, atividades, filters }) => {
     const { isDark, colors } = useTheme();
+    const { selectedEmpreendimento } = useEmpreendimento();
     const [statusFilter, setStatusFilter] = useState("all");
     const [dateFilter, setDateFilter] = useState(filters?.date_filter || "all");
     const [startDate, setStartDate] = useState(filters?.start_date || "");
@@ -46,24 +48,36 @@ const Activities = ({ auth, atividades, filters }) => {
     const [uploadedPhotos, setUploadedPhotos] = useState([]);
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
 
-    const activities = atividades?.data?.map(atv => ({
-        id: atv.atividade_id,
-        name: atv.atividade_descricao,
-        description: atv.atividade_descricao,
-        status: atv.atividade_status,
-        dbStatus: atv.atividade_status,
-        priority: atv.atividade_prioridade,
-        assignee: atv.profissional?.profissional_tipo || 'N/A',
-        dueDate: atv.atividade_dtestimada,
-        template: atv.tipo?.tipo_nome || '',
-        asset: `${atv.item?.ambiente?.torre?.torre_nome || ''} - ${atv.item?.item_nome || ''}`,
-        createdAt: atv.created_at,
-        startedAt: null,
-        completedAt: null,
-        notes: "",
-        photos: [],
-        documents: [],
-    })) || [];
+    // Map activities with empreendimento info
+    const allActivities = useMemo(() => {
+        return atividades?.data?.map(atv => ({
+            id: atv.atividade_id,
+            name: atv.atividade_descricao,
+            description: atv.atividade_descricao,
+            status: atv.atividade_status,
+            dbStatus: atv.atividade_status,
+            priority: atv.atividade_prioridade,
+            assignee: atv.profissional?.profissional_tipo || 'N/A',
+            dueDate: atv.atividade_dtestimada,
+            template: atv.tipo?.tipo_nome || '',
+            asset: `${atv.item?.ambiente?.torre?.torre_nome || ''} - ${atv.item?.item_nome || ''}`,
+            empreendimentoId: atv.item?.ambiente?.torre?.empreendimento_id,
+            createdAt: atv.created_at,
+            startedAt: null,
+            completedAt: null,
+            notes: "",
+            photos: [],
+            documents: [],
+        })) || [];
+    }, [atividades]);
+
+    // Filter activities by selected empreendimento
+    const activities = useMemo(() => {
+        if (!selectedEmpreendimento) return allActivities;
+        return allActivities.filter(activity =>
+            activity.empreendimentoId === selectedEmpreendimento.empreendimento_id
+        );
+    }, [allActivities, selectedEmpreendimento]);
 
     // State transition functions
     const handleStartActivity = (activity) => {

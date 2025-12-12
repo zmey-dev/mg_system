@@ -180,14 +180,14 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
             },
             grupos: {
                 icon: <FolderTree className="w-4 h-4" />,
-                title: "Grupos de Itens",
-                singular: "Grupo",
+                title: "Sistemas de Itens",
+                singular: "Sistema",
                 color: "blue",
             },
             subgrupos: {
                 icon: <Grid3x3 className="w-4 h-4" />,
-                title: "Subgrupos",
-                singular: "Subgrupo",
+                title: "Subsistemas",
+                singular: "Subsistema",
                 color: "teal",
             },
             origens: {
@@ -407,7 +407,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
                                 )}
                                 {grupoNome && (
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Grupo: {grupoNome}
+                                        Sistema: {grupoNome}
                                     </p>
                                 )}
                                 {dias && (
@@ -661,7 +661,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
                                             onValueChange={(val) => setFormData({...formData, itemgrupo_id: val})}
                                         >
                                             <SelectTrigger className={colors.surface}>
-                                                <SelectValue placeholder="Selecione um grupo" />
+                                                <SelectValue placeholder="Selecione um sistema" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {grupos?.map(grupo => (
@@ -993,7 +993,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
                                                 </div>
                                             ))}
                                             {(!grupos || grupos.length === 0) && (
-                                                <p className="text-sm text-gray-400 italic">Nenhum grupo cadastrado</p>
+                                                <p className="text-sm text-gray-400 italic">Nenhum sistema cadastrado</p>
                                             )}
                                         </div>
                                     </div>

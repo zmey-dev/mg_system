@@ -90,10 +90,10 @@ class DashboardController extends Controller
 
         // Master can see all torres, others see only their empreendimento
         if ($user->role === 'master') {
-            $torres = Torre::select('torre_id', 'torre_nome')->get();
+            $torres = Torre::select('torre_id', 'torre_nome', 'empreendimento_id')->get();
         } else {
             $torres = Torre::where('empreendimento_id', $empreendimentoId)
-                ->select('torre_id', 'torre_nome')
+                ->select('torre_id', 'torre_nome', 'empreendimento_id')
                 ->get();
         }
 

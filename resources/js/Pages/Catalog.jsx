@@ -820,7 +820,7 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                                             }}
                                             className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 ${colors.text.primary}`}
                                         >
-                                            Grupos
+                                            Sistemas
                                         </button>
                                         <button
                                             onClick={() => {
@@ -978,8 +978,8 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                                     Adicionar {
                                         selectedCategory === 'towers' ? 'Torre' :
                                         selectedCategory === 'environments' ? 'Ambiente' :
-                                        selectedCategory === 'groups' ? 'Grupo' :
-                                        selectedCategory === 'subgroups' ? 'Subgrupo' :
+                                        selectedCategory === 'groups' ? 'Sistema' :
+                                        selectedCategory === 'subgroups' ? 'Subsistema' :
                                         'Item'
                                     }
                                 </h3>
@@ -1160,7 +1160,7 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                                             </Select>
                                         </div>
                                         <div>
-                                            <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Grupo *</label>
+                                            <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Sistema *</label>
                                             <Select value={formData.itemgrupo_id} onValueChange={(val) => {
                                                 setFormData({...formData, itemgrupo_id: val, itemsubgrupo_id: ''});
                                             }}>
@@ -1177,14 +1177,14 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                                             </Select>
                                         </div>
                                         <div>
-                                            <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Subgrupo *</label>
+                                            <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Subsistema *</label>
                                             <Select
                                                 value={formData.itemsubgrupo_id}
                                                 onValueChange={(val) => setFormData({...formData, itemsubgrupo_id: val})}
                                                 disabled={!formData.itemgrupo_id}
                                             >
                                                 <SelectTrigger className={colors.surface}>
-                                                    <SelectValue placeholder={formData.itemgrupo_id ? "Selecione um subgrupo" : "Selecione um grupo primeiro"} />
+                                                    <SelectValue placeholder={formData.itemgrupo_id ? "Selecione um subsistema" : "Selecione um sistema primeiro"} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {grupos?.find(g => g.itemgrupo_id.toString() === formData.itemgrupo_id)?.subgrupos?.map(sub => (

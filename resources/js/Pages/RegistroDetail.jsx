@@ -116,7 +116,7 @@ export default function RegistroDetail({ auth, registro }) {
 
                                     <div>
                                         <label className={`text-xs font-medium ${colors.text.secondary} uppercase tracking-wider`}>
-                                            Grupo / Subgrupo
+                                            Sistema / Subsistema
                                         </label>
                                         <p className={`text-sm ${colors.text.primary} mt-1`}>
                                             {registro.atividade?.item?.subgrupo?.grupo?.itemgrupo_nome || 'N/A'} / {registro.atividade?.item?.subgrupo?.itemsubgrupo_nome || 'N/A'}
