@@ -12,6 +12,7 @@ class Tipo extends Model
 
     protected $fillable = [
         'tipo_nome',
+        'tipo_descricao',
     ];
 
     public function atividades(): HasMany

@@ -19,7 +19,7 @@ class ParametersController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('Parameters', [
-            'empreendimentos' => Empreendimento::all(),
+            'empreendimentos' => Empreendimento::with('torres')->get(),
             'grupos' => ItemGrupo::with('subgrupos')->get(),
             'subgrupos' => ItemSubgrupo::with('grupo')->get(),
             'origens' => Origem::all(),
@@ -46,6 +46,7 @@ class ParametersController extends Controller
     {
         $validated = $request->validate([
             'origem_nome' => 'required|string|max:50',
+            'origem_descricao' => 'nullable|string',
         ]);
 
         Origem::create($validated);
@@ -57,6 +58,7 @@ class ParametersController extends Controller
     {
         $validated = $request->validate([
             'tipo_nome' => 'required|string|max:50',
+            'tipo_descricao' => 'nullable|string',
         ]);
 
         Tipo::create($validated);
@@ -68,6 +70,7 @@ class ParametersController extends Controller
     {
         $validated = $request->validate([
             'doctotipo_nome' => 'required|string|max:50',
+            'doctotipo_descricao' => 'nullable|string',
         ]);
 
         DoctoTipo::create($validated);
@@ -115,6 +118,7 @@ class ParametersController extends Controller
         $origem = Origem::findOrFail($id);
         $validated = $request->validate([
             'origem_nome' => 'required|string|max:50',
+            'origem_descricao' => 'nullable|string',
         ]);
         $origem->update($validated);
         return redirect()->route('parameters')->with('success', 'Origin updated successfully.');
@@ -125,6 +129,7 @@ class ParametersController extends Controller
         $tipo = Tipo::findOrFail($id);
         $validated = $request->validate([
             'tipo_nome' => 'required|string|max:50',
+            'tipo_descricao' => 'nullable|string',
         ]);
         $tipo->update($validated);
         return redirect()->route('parameters')->with('success', 'Type updated successfully.');
@@ -135,6 +140,7 @@ class ParametersController extends Controller
         $doctoTipo = DoctoTipo::findOrFail($id);
         $validated = $request->validate([
             'doctotipo_nome' => 'required|string|max:50',
+            'doctotipo_descricao' => 'nullable|string',
         ]);
         $doctoTipo->update($validated);
         return redirect()->route('parameters')->with('success', 'Document type updated successfully.');
@@ -165,6 +171,11 @@ class ParametersController extends Controller
     public function destroyGrupo($id)
     {
         $grupo = ItemGrupo::findOrFail($id);
+
+        if ($grupo->subgrupos()->count() > 0) {
+            return back()->withErrors(['error' => 'Não pode ser excluído por estar em uso.']);
+        }
+
         $grupo->delete();
 
         return redirect()->route('parameters')->with('success', 'Grupo excluído com sucesso.');
@@ -173,6 +184,11 @@ class ParametersController extends Controller
     public function destroyOrigem($id)
     {
         $origem = Origem::findOrFail($id);
+
+        if ($origem->atividades()->count() > 0) {
+            return back()->withErrors(['error' => 'Não pode ser excluído por estar em uso.']);
+        }
+
         $origem->delete();
 
         return redirect()->route('parameters')->with('success', 'Origem excluída com sucesso.');
@@ -181,6 +197,11 @@ class ParametersController extends Controller
     public function destroyTipo($id)
     {
         $tipo = Tipo::findOrFail($id);
+
+        if ($tipo->atividades()->count() > 0) {
+            return back()->withErrors(['error' => 'Não pode ser excluído por estar em uso.']);
+        }
+
         $tipo->delete();
 
         return redirect()->route('parameters')->with('success', 'Tipo excluído com sucesso.');
@@ -189,6 +210,11 @@ class ParametersController extends Controller
     public function destroyDoctoTipo($id)
     {
         $doctoTipo = DoctoTipo::findOrFail($id);
+
+        if ($doctoTipo->atividades()->count() > 0) {
+            return back()->withErrors(['error' => 'Não pode ser excluído por estar em uso.']);
+        }
+
         $doctoTipo->delete();
 
         return redirect()->route('parameters')->with('success', 'Tipo de documento excluído com sucesso.');
@@ -197,6 +223,11 @@ class ParametersController extends Controller
     public function destroyPeriodo($id)
     {
         $periodo = Periodo::findOrFail($id);
+
+        if ($periodo->atividades()->count() > 0) {
+            return back()->withErrors(['error' => 'Não pode ser excluído por estar em uso.']);
+        }
+
         $periodo->delete();
 
         return redirect()->route('parameters')->with('success', 'Período excluído com sucesso.');
@@ -205,6 +236,11 @@ class ParametersController extends Controller
     public function destroyProfissional($id)
     {
         $profissional = Profissional::findOrFail($id);
+
+        if ($profissional->atividades()->count() > 0) {
+            return back()->withErrors(['error' => 'Não pode ser excluído por estar em uso.']);
+        }
+
         $profissional->delete();
 
         return redirect()->route('parameters')->with('success', 'Tipo de profissional excluído com sucesso.');
@@ -238,6 +274,11 @@ class ParametersController extends Controller
     public function destroySubgrupo($id)
     {
         $subgrupo = ItemSubgrupo::findOrFail($id);
+
+        if ($subgrupo->items()->count() > 0) {
+            return back()->withErrors(['error' => 'Não pode ser excluído por estar em uso.']);
+        }
+
         $subgrupo->delete();
 
         return redirect()->route('parameters')->with('success', 'Subgrupo excluído com sucesso.');

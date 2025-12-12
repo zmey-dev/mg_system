@@ -12,6 +12,7 @@ class Origem extends Model
 
     protected $fillable = [
         'origem_nome',
+        'origem_descricao',
     ];
 
     public function atividades(): HasMany

@@ -269,13 +269,23 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
         // Auto-set empreendimento_id for non-master users or if only one empreendimento exists
         const defaultEmpId = auth.user?.empreendimento_id ||
             (empreendimentos?.length === 1 ? empreendimentos[0].empreendimento_id : '');
+
+        // Auto-set torre_id if only one torre exists for the empreendimento
+        let defaultTorreId = '';
+        if (defaultEmpId) {
+            const filteredTorres = torres?.filter(t => t.empreendimento_id.toString() === defaultEmpId.toString());
+            if (filteredTorres?.length === 1) {
+                defaultTorreId = filteredTorres[0].torre_id.toString();
+            }
+        }
+
         setFormData({
             empreendimento_id: defaultEmpId ? defaultEmpId.toString() : '',
             torre_nome: '',
             torre_qtdaptos: '',
             ambiente_nome: '',
             ambiente_descricao: '',
-            torre_id: '',
+            torre_id: defaultTorreId,
             item_nome: '',
             item_descricao: '',
             ambiente_id: '',
@@ -1032,14 +1042,44 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
 
                                 {selectedCategory === 'environments' && (
                                     <>
+                                        {empreendimentos?.length > 1 && (
+                                            <div>
+                                                <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Empreendimento *</label>
+                                                <Select
+                                                    value={formData.empreendimento_id}
+                                                    onValueChange={(val) => {
+                                                        const filteredTorres = torres?.filter(t => t.empreendimento_id.toString() === val);
+                                                        const autoTorreId = filteredTorres?.length === 1 ? filteredTorres[0].torre_id.toString() : '';
+                                                        setFormData({...formData, empreendimento_id: val, torre_id: autoTorreId});
+                                                    }}
+                                                >
+                                                    <SelectTrigger className={colors.surface}>
+                                                        <SelectValue placeholder="Selecione um empreendimento" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {empreendimentos?.map(emp => (
+                                                            <SelectItem key={emp.empreendimento_id} value={emp.empreendimento_id.toString()}>
+                                                                {emp.empreendimento_nome}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
                                         <div>
                                             <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Torre *</label>
-                                            <Select value={formData.torre_id} onValueChange={(val) => setFormData({...formData, torre_id: val})}>
+                                            <Select
+                                                value={formData.torre_id}
+                                                onValueChange={(val) => setFormData({...formData, torre_id: val})}
+                                                disabled={empreendimentos?.length > 1 && !formData.empreendimento_id}
+                                            >
                                                 <SelectTrigger className={colors.surface}>
-                                                    <SelectValue placeholder="Selecione uma torre" />
+                                                    <SelectValue placeholder={empreendimentos?.length > 1 && !formData.empreendimento_id ? "Selecione um empreendimento primeiro" : "Selecione uma torre"} />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {torres?.map(torre => (
+                                                    {torres?.filter(torre =>
+                                                        !formData.empreendimento_id || torre.empreendimento_id.toString() === formData.empreendimento_id
+                                                    ).map(torre => (
                                                         <SelectItem key={torre.torre_id} value={torre.torre_id.toString()}>
                                                             {torre.torre_nome}
                                                         </SelectItem>

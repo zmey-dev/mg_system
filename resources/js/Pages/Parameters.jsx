@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import MainLayout from "@/Layouts/MainLayout";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
@@ -7,7 +7,7 @@ import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import {
     FolderTree,
     MapPinned,
@@ -22,13 +22,23 @@ import {
     Search,
     Building,
     Grid3x3,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
+    List,
+    Printer,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { isValidCNPJ, formatCNPJ } from "@brazilian-utils/brazilian-utils";
+import { useReactToPrint } from "react-to-print";
 
 const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, periodos, profissionais, empreendimentos }) => {
     const { isDark, colors } = useTheme();
+    const { errors } = usePage().props;
     const [activeTab, setActiveTab] = useState("grupos");
     const [searchTerm, setSearchTerm] = useState("");
+    const [sortField, setSortField] = useState("nome"); // "nome" or "date"
+    const [sortDirection, setSortDirection] = useState("asc"); // "asc" or "desc"
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({
@@ -44,6 +54,38 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
         qtdtorre: "",
         itemgrupo_id: "",
     });
+    const [cnpjError, setCnpjError] = useState("");
+    const [showListModal, setShowListModal] = useState(false);
+    const printRef = useRef(null);
+
+    const handlePrint = useReactToPrint({
+        contentRef: printRef,
+        documentTitle: "Parâmetros do Sistema - MG System",
+    });
+
+    const handleCnpjChange = (value) => {
+        // Remove non-numeric characters for validation
+        const numericValue = value.replace(/\D/g, "");
+
+        // Format the CNPJ as user types
+        let formattedValue = value;
+        if (numericValue.length <= 14) {
+            formattedValue = formatCNPJ(numericValue);
+        }
+
+        setFormData({ ...formData, cnpj: formattedValue });
+
+        // Validate only when we have enough digits
+        if (numericValue.length === 14) {
+            if (!isValidCNPJ(numericValue)) {
+                setCnpjError("CNPJ inválido");
+            } else {
+                setCnpjError("");
+            }
+        } else if (numericValue.length > 0) {
+            setCnpjError("");
+        }
+    };
 
     const getDataForTab = () => {
         let data = [];
@@ -76,16 +118,56 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
                 return [];
         }
 
-        if (!searchTerm || searchTerm.length < 3) return data;
+        // Filter by search term
+        if (searchTerm && searchTerm.length >= 3) {
+            data = data.filter((item) => {
+                const nome = item.empreendimento_nome || item.itemgrupo_nome || item.itemsubgrupo_nome || item.origem_nome || item.tipo_nome ||
+                            item.doctotipo_nome || item.periodo_nome || item.profissional_tipo || "";
+                const descricao = item.itemgrupo_descricao || item.itemsubgrupo_descricao || item.origem_descricao || item.tipo_descricao ||
+                            item.doctotipo_descricao || item.profissional_descricao || "";
 
-        return data.filter((item) => {
-            const nome = item.empreendimento_nome || item.itemgrupo_nome || item.itemsubgrupo_nome || item.origem_nome || item.tipo_nome ||
-                        item.doctotipo_nome || item.periodo_nome || item.profissional_tipo || "";
-            const descricao = item.itemgrupo_descricao || item.itemsubgrupo_descricao || item.profissional_descricao || "";
+                return nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       descricao.toLowerCase().includes(searchTerm.toLowerCase());
+            });
+        }
 
-            return nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                   descricao.toLowerCase().includes(searchTerm.toLowerCase());
+        // Sort data
+        const sortedData = [...data].sort((a, b) => {
+            let valueA, valueB;
+
+            if (sortField === "nome") {
+                valueA = (a.empreendimento_nome || a.itemgrupo_nome || a.itemsubgrupo_nome || a.origem_nome || a.tipo_nome ||
+                         a.doctotipo_nome || a.periodo_nome || a.profissional_tipo || "").toLowerCase();
+                valueB = (b.empreendimento_nome || b.itemgrupo_nome || b.itemsubgrupo_nome || b.origem_nome || b.tipo_nome ||
+                         b.doctotipo_nome || b.periodo_nome || b.profissional_tipo || "").toLowerCase();
+            } else {
+                // Sort by date (updated_at or created_at)
+                valueA = a.updated_at || a.created_at || "";
+                valueB = b.updated_at || b.created_at || "";
+            }
+
+            if (valueA < valueB) return sortDirection === "asc" ? -1 : 1;
+            if (valueA > valueB) return sortDirection === "asc" ? 1 : -1;
+            return 0;
         });
+
+        return sortedData;
+    };
+
+    const toggleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const getSortIcon = (field) => {
+        if (sortField !== field) {
+            return <ArrowUpDown className="w-4 h-4" />;
+        }
+        return sortDirection === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
     };
 
     const getTabConfig = (tab) => {
@@ -145,6 +227,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
     const handleAdd = () => {
         setEditingItem(null);
         setFormData({ nome: "", descricao: "", dias: "", cnpj: "", endereco: "", numero: "", cep: "", cidade: "", uf: "", qtdtorre: "", itemgrupo_id: "" });
+        setCnpjError("");
         setShowAddModal(true);
     };
 
@@ -152,7 +235,8 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
         setEditingItem(item);
         const nome = item.empreendimento_nome || item.itemgrupo_nome || item.itemsubgrupo_nome || item.origem_nome || item.tipo_nome ||
                     item.doctotipo_nome || item.periodo_nome || item.profissional_tipo || "";
-        const descricao = item.itemgrupo_descricao || item.itemsubgrupo_descricao || item.profissional_descricao || "";
+        const descricao = item.itemgrupo_descricao || item.itemsubgrupo_descricao || item.origem_descricao || item.tipo_descricao ||
+                    item.doctotipo_descricao || item.profissional_descricao || "";
         const dias = item.periodo_dias || "";
         const cnpj = item.empreendimento_cnpj || "";
         const endereco = item.empreendimento_endereco || "";
@@ -164,6 +248,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
         const itemgrupo_id = item.itemgrupo_id ? item.itemgrupo_id.toString() : "";
 
         setFormData({ nome, descricao, dias, cnpj, endereco, numero, cep, cidade, uf, qtdtorre, itemgrupo_id });
+        setCnpjError("");
         setShowAddModal(true);
     };
 
@@ -212,12 +297,15 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
             },
             origens: {
                 origem_nome: formData.nome,
+                origem_descricao: formData.descricao,
             },
             tipos: {
                 tipo_nome: formData.nome,
+                tipo_descricao: formData.descricao,
             },
             doctoTipos: {
                 doctotipo_nome: formData.nome,
+                doctotipo_descricao: formData.descricao,
             },
             periodos: {
                 periodo_nome: formData.nome,
@@ -290,7 +378,8 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
         const config = getTabConfig(activeTab);
         const nome = item.empreendimento_nome || item.itemgrupo_nome || item.itemsubgrupo_nome || item.origem_nome || item.tipo_nome ||
                     item.doctotipo_nome || item.periodo_nome || item.profissional_tipo || "";
-        const descricao = item.itemgrupo_descricao || item.itemsubgrupo_descricao || item.profissional_descricao || "";
+        const descricao = item.itemgrupo_descricao || item.itemsubgrupo_descricao || item.origem_descricao || item.tipo_descricao ||
+                    item.doctotipo_descricao || item.profissional_descricao || "";
         const dias = item.periodo_dias;
         const grupoNome = item.grupo?.itemgrupo_nome || "";
         const id = item.empreendimento_id || item.itemsubgrupo_id || item.itemgrupo_id || item.origem_id || item.tipo_id ||
@@ -382,7 +471,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
     };
 
     const needsDescricao = () => {
-        return activeTab === "grupos" || activeTab === "subgrupos" || activeTab === "profissionais";
+        return activeTab === "grupos" || activeTab === "subgrupos" || activeTab === "origens" || activeTab === "tipos" || activeTab === "doctoTipos" || activeTab === "profissionais";
     };
 
     const needsDias = () => {
@@ -412,29 +501,69 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
                             </p>
                         </div>
 
-                        <Button
-                            onClick={handleAdd}
-                            className="w-full sm:w-auto bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-sm hover:shadow-md transition-all whitespace-nowrap flex-shrink-0"
-                        >
-                            <Plus className="w-4 h-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Adicionar {getTabConfig(activeTab).singular}</span>
-                            <span className="sm:hidden">Adicionar {getTabConfig(activeTab).singular.split(' ')[0]}</span>
-                        </Button>
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            <Button
+                                onClick={() => setShowListModal(true)}
+                                variant="outline"
+                                className="flex-1 sm:flex-none"
+                            >
+                                <List className="w-4 h-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Listar Tudo</span>
+                            </Button>
+                            <Button
+                                onClick={handleAdd}
+                                className="flex-1 sm:flex-none bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-sm hover:shadow-md transition-all whitespace-nowrap"
+                            >
+                                <Plus className="w-4 h-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Adicionar {getTabConfig(activeTab).singular}</span>
+                                <span className="sm:hidden">Adicionar</span>
+                            </Button>
+                        </div>
                     </div>
 
-                    {/* Search */}
-                    <div className="relative w-full sm:max-w-lg">
-                        <Search
-                            className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${colors.text.muted} w-4 h-4`}
-                        />
-                        <Input
-                            placeholder="Buscar (mín. 3 letras)..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className={`pl-10 border ${colors.border} ${colors.surface} ${colors.text.primary} placeholder:text-gray-400`}
-                        />
+                    {/* Search and Sort */}
+                    <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                        <div className="relative flex-1 sm:max-w-lg">
+                            <Search
+                                className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${colors.text.muted} w-4 h-4`}
+                            />
+                            <Input
+                                placeholder="Buscar (mín. 3 letras)..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className={`pl-10 border ${colors.border} ${colors.surface} ${colors.text.primary} placeholder:text-gray-400`}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className={`text-sm ${colors.text.secondary} hidden sm:inline`}>Ordenar:</span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => toggleSort("nome")}
+                                className={`flex items-center gap-1.5 ${sortField === "nome" ? "border-blue-500 text-blue-600 dark:text-blue-400" : ""}`}
+                            >
+                                {getSortIcon("nome")}
+                                <span>Nome</span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => toggleSort("date")}
+                                className={`flex items-center gap-1.5 ${sortField === "date" ? "border-blue-500 text-blue-600 dark:text-blue-400" : ""}`}
+                            >
+                                {getSortIcon("date")}
+                                <span>Data</span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Error Message */}
+                {errors?.error && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
+                        {errors.error}
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <Card className={`${colors.card} backdrop-blur-sm border ${colors.border} shadow-lg`}>
@@ -594,15 +723,13 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
                                             </label>
                                             <Input
                                                 value={formData.cnpj}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        cnpj: e.target.value,
-                                                    })
-                                                }
+                                                onChange={(e) => handleCnpjChange(e.target.value)}
                                                 placeholder="00.000.000/0000-00"
-                                                className={colors.surface}
+                                                className={`${colors.surface} ${cnpjError ? "border-red-500" : ""}`}
                                             />
+                                            {cnpjError && (
+                                                <p className="text-red-500 text-xs mt-1">{cnpjError}</p>
+                                            )}
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -756,12 +883,231 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
                                     onClick={handleSave}
                                     disabled={
                                         !formData.nome ||
-                                        (isEmpreendimento() && (!formData.cnpj || !formData.endereco || !formData.numero || !formData.cep || !formData.cidade || !formData.uf))
+                                        (isEmpreendimento() && (!formData.cnpj || !formData.endereco || !formData.numero || !formData.cep || !formData.cidade || !formData.uf || cnpjError))
                                     }
                                     className="w-full sm:w-auto bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white"
                                 >
                                     {editingItem ? "Atualizar" : "Criar"}
                                 </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* List All Modal */}
+            {showListModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-4xl my-8 max-h-[90vh] flex flex-col">
+                        <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <h3 className={`text-lg sm:text-xl font-semibold ${colors.text.primary}`}>
+                                Parâmetros Cadastrados
+                            </h3>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handlePrint}
+                                    className="flex items-center gap-1.5"
+                                >
+                                    <Printer className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Imprimir / PDF</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowListModal(false)}
+                                >
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1" ref={printRef}>
+                            <div className="print:p-4">
+                                {/* Print Header - only visible when printing */}
+                                <div className="hidden print:block mb-6 text-center">
+                                    <h1 className="text-2xl font-bold">Parâmetros do Sistema</h1>
+                                    <p className="text-sm text-gray-500">MG System - {new Date().toLocaleDateString('pt-BR')}</p>
+                                </div>
+
+                                <div className="space-y-6 print:space-y-4">
+                                    {/* Empreendimentos with Torres */}
+                                    <div className="print:break-inside-avoid">
+                                        <h4 className="font-semibold text-lg mb-3 flex items-center gap-2 text-cyan-700 dark:text-cyan-400 print:text-black">
+                                            <Building className="w-5 h-5 print:hidden" />
+                                            Empreendimentos ({empreendimentos?.length || 0})
+                                        </h4>
+                                        <div className="space-y-2 ml-4 print:ml-2">
+                                            {empreendimentos?.map(emp => (
+                                                <div key={emp.empreendimento_id} className="border-l-2 border-cyan-300 dark:border-cyan-700 pl-3 print:border-gray-400">
+                                                    <p className={`font-medium ${colors.text.primary} print:text-black`}>{emp.empreendimento_nome}</p>
+                                                    <p className="text-sm text-gray-500 print:text-gray-600">CNPJ: {emp.empreendimento_cnpj}</p>
+                                                    <p className="text-sm text-gray-500 print:text-gray-600">
+                                                        {emp.empreendimento_endereco}, {emp.empreendimento_numero} - {emp.empreendimento_cidade}/{emp.empreendimento_uf}
+                                                    </p>
+                                                    {emp.torres && emp.torres.length > 0 && (
+                                                        <div className="mt-2 ml-4">
+                                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 print:text-gray-700">Torres:</p>
+                                                            <ul className="list-disc ml-4 text-sm text-gray-600 dark:text-gray-400 print:text-gray-600">
+                                                                {emp.torres.map(torre => (
+                                                                    <li key={torre.torre_id}>{torre.torre_nome}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            {(!empreendimentos || empreendimentos.length === 0) && (
+                                                <p className="text-sm text-gray-400 italic">Nenhum empreendimento cadastrado</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Grupos with Subgrupos */}
+                                    <div className="print:break-inside-avoid">
+                                        <h4 className="font-semibold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-400 print:text-black">
+                                            <FolderTree className="w-5 h-5 print:hidden" />
+                                            Grupos de Itens ({grupos?.length || 0})
+                                        </h4>
+                                        <div className="space-y-2 ml-4 print:ml-2">
+                                            {grupos?.map(grupo => (
+                                                <div key={grupo.itemgrupo_id} className="border-l-2 border-blue-300 dark:border-blue-700 pl-3 print:border-gray-400">
+                                                    <p className={`font-medium ${colors.text.primary} print:text-black`}>{grupo.itemgrupo_nome}</p>
+                                                    {grupo.itemgrupo_descricao && (
+                                                        <p className="text-sm text-gray-500 italic print:text-gray-600">{grupo.itemgrupo_descricao}</p>
+                                                    )}
+                                                    {grupo.subgrupos && grupo.subgrupos.length > 0 && (
+                                                        <div className="mt-2 ml-4">
+                                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 print:text-gray-700">Subgrupos:</p>
+                                                            <ul className="list-disc ml-4 text-sm text-gray-600 dark:text-gray-400 print:text-gray-600">
+                                                                {grupo.subgrupos.map(sub => (
+                                                                    <li key={sub.itemsubgrupo_id}>
+                                                                        {sub.itemsubgrupo_nome}
+                                                                        {sub.itemsubgrupo_descricao && <span className="italic"> - {sub.itemsubgrupo_descricao}</span>}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            {(!grupos || grupos.length === 0) && (
+                                                <p className="text-sm text-gray-400 italic">Nenhum grupo cadastrado</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Origens */}
+                                    <div className="print:break-inside-avoid">
+                                        <h4 className="font-semibold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-400 print:text-black">
+                                            <MapPinned className="w-5 h-5 print:hidden" />
+                                            Origens ({origens?.length || 0})
+                                        </h4>
+                                        <div className="ml-4 print:ml-2">
+                                            <ul className="list-disc ml-4 space-y-1">
+                                                {origens?.map(origem => (
+                                                    <li key={origem.origem_id} className={`${colors.text.primary} print:text-black`}>
+                                                        {origem.origem_nome}
+                                                        {origem.origem_descricao && <span className="text-sm text-gray-500 italic print:text-gray-600"> - {origem.origem_descricao}</span>}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            {(!origens || origens.length === 0) && (
+                                                <p className="text-sm text-gray-400 italic">Nenhuma origem cadastrada</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Tipos */}
+                                    <div className="print:break-inside-avoid">
+                                        <h4 className="font-semibold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-400 print:text-black">
+                                            <FileType className="w-5 h-5 print:hidden" />
+                                            Tipos de Atividade ({tipos?.length || 0})
+                                        </h4>
+                                        <div className="ml-4 print:ml-2">
+                                            <ul className="list-disc ml-4 space-y-1">
+                                                {tipos?.map(tipo => (
+                                                    <li key={tipo.tipo_id} className={`${colors.text.primary} print:text-black`}>
+                                                        {tipo.tipo_nome}
+                                                        {tipo.tipo_descricao && <span className="text-sm text-gray-500 italic print:text-gray-600"> - {tipo.tipo_descricao}</span>}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            {(!tipos || tipos.length === 0) && (
+                                                <p className="text-sm text-gray-400 italic">Nenhum tipo cadastrado</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Tipos de Documento */}
+                                    <div className="print:break-inside-avoid">
+                                        <h4 className="font-semibold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-400 print:text-black">
+                                            <FileText className="w-5 h-5 print:hidden" />
+                                            Tipos de Documento ({doctoTipos?.length || 0})
+                                        </h4>
+                                        <div className="ml-4 print:ml-2">
+                                            <ul className="list-disc ml-4 space-y-1">
+                                                {doctoTipos?.map(docto => (
+                                                    <li key={docto.doctotipo_id} className={`${colors.text.primary} print:text-black`}>
+                                                        {docto.doctotipo_nome}
+                                                        {docto.doctotipo_descricao && <span className="text-sm text-gray-500 italic print:text-gray-600"> - {docto.doctotipo_descricao}</span>}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            {(!doctoTipos || doctoTipos.length === 0) && (
+                                                <p className="text-sm text-gray-400 italic">Nenhum tipo de documento cadastrado</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Períodos */}
+                                    <div className="print:break-inside-avoid">
+                                        <h4 className="font-semibold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-400 print:text-black">
+                                            <Calendar className="w-5 h-5 print:hidden" />
+                                            Períodos ({periodos?.length || 0})
+                                        </h4>
+                                        <div className="ml-4 print:ml-2">
+                                            <ul className="list-disc ml-4 space-y-1">
+                                                {periodos?.map(periodo => (
+                                                    <li key={periodo.periodo_id} className={`${colors.text.primary} print:text-black`}>
+                                                        {periodo.periodo_nome}
+                                                        {periodo.periodo_dias && <span className="text-sm text-gray-500 print:text-gray-600"> ({periodo.periodo_dias} dias)</span>}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            {(!periodos || periodos.length === 0) && (
+                                                <p className="text-sm text-gray-400 italic">Nenhum período cadastrado</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Profissionais */}
+                                    <div className="print:break-inside-avoid">
+                                        <h4 className="font-semibold text-lg mb-3 flex items-center gap-2 text-indigo-700 dark:text-indigo-400 print:text-black">
+                                            <Users className="w-5 h-5 print:hidden" />
+                                            Tipos de Profissional ({profissionais?.length || 0})
+                                        </h4>
+                                        <div className="ml-4 print:ml-2">
+                                            <ul className="list-disc ml-4 space-y-1">
+                                                {profissionais?.map(prof => (
+                                                    <li key={prof.profissional_id} className={`${colors.text.primary} print:text-black`}>
+                                                        {prof.profissional_tipo}
+                                                        {prof.profissional_descricao && <span className="text-sm text-gray-500 italic print:text-gray-600"> - {prof.profissional_descricao}</span>}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            {(!profissionais || profissionais.length === 0) && (
+                                                <p className="text-sm text-gray-400 italic">Nenhum tipo de profissional cadastrado</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Print Footer - only visible when printing */}
+                                <div className="hidden print:block mt-8 pt-4 border-t border-gray-300 text-center text-sm text-gray-500">
+                                    <p>Documento gerado em {new Date().toLocaleString('pt-BR')}</p>
+                                </div>
                             </div>
                         </div>
                     </div>

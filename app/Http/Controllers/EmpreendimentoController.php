@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empreendimento;
+use App\Rules\ValidCnpj;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,7 +23,7 @@ class EmpreendimentoController extends Controller
     {
         $validated = $request->validate([
             'empreendimento_nome' => 'required|string|max:255',
-            'empreendimento_cnpj' => 'required|string|max:20',
+            'empreendimento_cnpj' => ['required', 'string', 'max:20', new ValidCnpj],
             'empreendimento_endereco' => 'required|string|max:255',
             'empreendimento_numero' => 'required|string|max:10',
             'empreendimento_cep' => 'required|string|max:10',
@@ -54,7 +55,7 @@ class EmpreendimentoController extends Controller
 
         $validated = $request->validate([
             'empreendimento_nome' => 'sometimes|string|max:255',
-            'empreendimento_cnpj' => 'sometimes|string|max:20',
+            'empreendimento_cnpj' => ['sometimes', 'string', 'max:20', new ValidCnpj],
             'empreendimento_endereco' => 'sometimes|string|max:255',
             'empreendimento_numero' => 'sometimes|string|max:10',
             'empreendimento_cep' => 'sometimes|string|max:10',
@@ -77,6 +78,11 @@ class EmpreendimentoController extends Controller
     public function destroy(Request $request, $id)
     {
         $empreendimento = Empreendimento::findOrFail($id);
+
+        if ($empreendimento->torres()->count() > 0) {
+            return back()->withErrors(['error' => 'Não pode ser excluído por estar em uso.']);
+        }
+
         $empreendimento->delete();
 
         // Redirect back to where the request came from (Parameters or Empreendimentos page)

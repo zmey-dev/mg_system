@@ -12,6 +12,7 @@ class DoctoTipo extends Model
 
     protected $fillable = [
         'doctotipo_nome',
+        'doctotipo_descricao',
     ];
 
     public function atividades(): HasMany

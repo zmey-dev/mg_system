@@ -42,7 +42,6 @@ const Activities = ({ auth, atividades, filters }) => {
     const [endDate, setEndDate] = useState(filters?.end_date || "");
     const [selectedActivity, setSelectedActivity] = useState(null);
     const [showExecutionModal, setShowExecutionModal] = useState(false);
-    const [showNewActivityModal, setShowNewActivityModal] = useState(false);
     const [executionNotes, setExecutionNotes] = useState("");
     const [uploadedPhotos, setUploadedPhotos] = useState([]);
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
@@ -391,7 +390,7 @@ const Activities = ({ auth, atividades, filters }) => {
                         </Button>
                         {auth.user && (
                             <Button
-                                onClick={() => setShowNewActivityModal(true)}
+                                onClick={() => router.visit('/catalog/items')}
                                 className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-sm w-full sm:w-auto justify-center"
                             >
                                 <Plus className="w-4 h-4 sm:mr-2" />
@@ -905,38 +904,6 @@ const Activities = ({ auth, atividades, filters }) => {
                 </div>
             )}
 
-            {/* New Activity Modal - Redirect to Catalog */}
-            {showNewActivityModal && (
-                <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center p-4 z-50">
-                    <div
-                        className={`${colors.card} rounded-lg p-6 w-full max-w-md shadow-2xl`}
-                    >
-                        <h3
-                            className={`text-lg font-semibold mb-4 ${colors.text.primary}`}
-                        >
-                            Nova Atividade
-                        </h3>
-                        <p className={`${colors.text.secondary} mb-4`}>
-                            Para criar uma nova atividade, primeiro selecione um item no Catálogo.
-                        </p>
-                        <div className="flex gap-3">
-                            <Button
-                                variant="outline"
-                                onClick={() => setShowNewActivityModal(false)}
-                                className="flex-1"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                onClick={() => router.visit('/catalog')}
-                                className="flex-1 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800"
-                            >
-                                Ir para Catálogo
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </MainLayout>
     );
 };
