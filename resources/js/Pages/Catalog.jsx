@@ -86,6 +86,7 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
             description: `Torre com ${torre.torre_qtdaptos} apartamentos`,
             status: 'active',
             totalUnits: torre.torre_qtdaptos,
+            empreendimento_id: torre.empreendimento_id,
             children: torre.ambientes?.map(ambiente => ({
                 id: `env-${ambiente.ambiente_id}`,
                 name: ambiente.ambiente_nome,
@@ -254,9 +255,22 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
 
     // CRUD functions
     const handleAdd = () => {
+        // Check if empreendimento exists for towers category
+        if (selectedCategory === 'towers') {
+            const hasEmpreendimento = auth.user?.empreendimento_id || (empreendimentos?.length > 0);
+            if (!hasEmpreendimento) {
+                alert('Nenhum empreendimento cadastrado. Por favor, cadastre um empreendimento primeiro.');
+                return;
+            }
+        }
+
         setEditingItem(null);
         setErrorMessage('');
+        // Auto-set empreendimento_id for non-master users or if only one empreendimento exists
+        const defaultEmpId = auth.user?.empreendimento_id ||
+            (empreendimentos?.length === 1 ? empreendimentos[0].empreendimento_id : '');
         setFormData({
+            empreendimento_id: defaultEmpId ? defaultEmpId.toString() : '',
             torre_nome: '',
             torre_qtdaptos: '',
             ambiente_nome: '',
@@ -281,6 +295,7 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
         if (itemType === 'tower') {
             setFormData({
                 ...formData,
+                empreendimento_id: item.empreendimento_id ? item.empreendimento_id.toString() : '',
                 torre_nome: item.name,
                 torre_qtdaptos: item.totalUnits || ''
             });
@@ -425,8 +440,13 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
         } else {
             // Create new
             if (selectedCategory === 'towers') {
+                const empId = formData.empreendimento_id || auth.user?.empreendimento_id;
+                if (!empId) {
+                    setErrorMessage('Selecione um empreendimento antes de adicionar uma torre.');
+                    return;
+                }
                 router.post(route('torres.store'), {
-                    empreendimento_id: formData.empreendimento_id || auth.user.empreendimento_id,
+                    empreendimento_id: parseInt(empId),
                     torre_nome: formData.torre_nome,
                     torre_qtdaptos: parseInt(formData.torre_qtdaptos) || 0
                 }, {
@@ -450,7 +470,8 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                         });
                     },
                     onError: (errors) => {
-                        console.error('Error creating torre:', errors);
+                        const errorMsg = Object.values(errors).flat().join(', ');
+                        setErrorMessage(errorMsg || 'Erro ao criar torre.');
                     }
                 });
             } else if (selectedCategory === 'environments') {
@@ -1213,6 +1234,14 @@ export default function Catalog({ auth, torres, grupos, empreendimentos, origens
                             <div className="space-y-4">
                                 {editingItem.type === 'tower' && (
                                     <>
+                                        <div>
+                                            <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Empreendimento</label>
+                                            <Input
+                                                value={empreendimentos?.find(e => e.empreendimento_id.toString() === formData.empreendimento_id)?.empreendimento_nome || ''}
+                                                disabled
+                                                className={`${colors.surface} opacity-60`}
+                                            />
+                                        </div>
                                         <div>
                                             <label className={`block text-sm font-medium ${colors.text.primary} mb-1`}>Nome da Torre *</label>
                                             <Input

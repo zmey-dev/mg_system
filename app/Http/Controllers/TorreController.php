@@ -50,6 +50,16 @@ class TorreController extends Controller
             return back()->withErrors(['empreendimento_id' => 'Você só pode criar torres para seu próprio empreendimento.']);
         }
 
+        // Check if empreendimento has reached maximum torre limit
+        $empreendimento = Empreendimento::findOrFail($validated['empreendimento_id']);
+        $currentTorreCount = Torre::where('empreendimento_id', $validated['empreendimento_id'])->count();
+
+        if ($empreendimento->empreendimento_qtdtorre && $currentTorreCount >= $empreendimento->empreendimento_qtdtorre) {
+            return back()->withErrors([
+                'torre_nome' => "Este empreendimento já atingiu o limite máximo de {$empreendimento->empreendimento_qtdtorre} torres."
+            ]);
+        }
+
         Torre::create($validated);
 
         return redirect()->route('catalog')->with('success', 'Torre criada com sucesso.');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
     Building,
@@ -67,8 +67,7 @@ const MainLayout = ({ children, auth }) => {
     ];
 
     const handleLogout = () => {
-        // Here would be the logout API call
-        window.location.href = '/login';
+        router.post(route('logout'));
     };
 
     return (
