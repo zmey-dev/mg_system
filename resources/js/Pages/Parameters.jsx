@@ -55,6 +55,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
         itemgrupo_id: "",
     });
     const [cnpjError, setCnpjError] = useState("");
+    const [formErrors, setFormErrors] = useState({});
     const [showListModal, setShowListModal] = useState(false);
     const printRef = useRef(null);
 
@@ -228,6 +229,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
         setEditingItem(null);
         setFormData({ nome: "", descricao: "", dias: "", cnpj: "", endereco: "", numero: "", cep: "", cidade: "", uf: "", qtdtorre: "", itemgrupo_id: "" });
         setCnpjError("");
+        setFormErrors({});
         setShowAddModal(true);
     };
 
@@ -249,6 +251,7 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
 
         setFormData({ nome, descricao, dias, cnpj, endereco, numero, cep, cidade, uf, qtdtorre, itemgrupo_id });
         setCnpjError("");
+        setFormErrors({});
         setShowAddModal(true);
     };
 
@@ -321,6 +324,11 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
             setShowAddModal(false);
             setEditingItem(null);
             setFormData({ nome: "", descricao: "", dias: "", cnpj: "", endereco: "", numero: "", cep: "", cidade: "", uf: "", qtdtorre: "", itemgrupo_id: "" });
+            setFormErrors({});
+        };
+
+        const onErrorCallback = (errors) => {
+            setFormErrors(errors);
         };
 
         if (editingItem) {
@@ -337,17 +345,13 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
 
             router.put(route(updateRoutes[activeTab], id), updateData, {
                 onSuccess: onSuccessCallback,
-                onError: (errors) => {
-                    console.error('Error updating:', errors);
-                }
+                onError: onErrorCallback
             });
         } else {
             // Create new item
             router.post(route(storeRoutes[activeTab]), fieldMappings[activeTab], {
                 onSuccess: onSuccessCallback,
-                onError: (errors) => {
-                    console.error('Error creating:', errors);
-                }
+                onError: onErrorCallback
             });
         }
     };
@@ -868,6 +872,17 @@ const Parameters = ({ auth, grupos, subgrupos, origens, tipos, doctoTipos, perio
                                             </div>
                                         </div>
                                     </>
+                                )}
+
+                                {/* Form Errors Display */}
+                                {Object.keys(formErrors).length > 0 && (
+                                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
+                                        <ul className="list-disc list-inside text-sm">
+                                            {Object.entries(formErrors).map(([field, message]) => (
+                                                <li key={field}>{message}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 )}
                             </div>
 
